@@ -1,0 +1,41 @@
+# Node modules
+**/node_modules/
+
+# Logs
+*.log
+
+# Environment files
+**/.env
+**/.env.*
+
+# Build outputs
+**/dist/
+**/build/
+**/.next/
+**/.cache/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.sw?
+*.sublime-*
+
+# Test coverage
+coverage/
+*.lcov
+
+# Truffle artifacts
+smart-contracts/build/
+smart-contracts/.openzeppelin/
+
+# Docker
+**/docker-volume/
+
+# Misc
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*

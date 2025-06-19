@@ -10,5 +10,12 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "modulejs",
+  "dependencies": {
+    "crypto": "^1.0.1",
+    "crypto-js": "^4.2.0",
+    "express": "^5.1.0",
+    "ipfs-http-client": "^60.0.1",
+    "multer": "^2.0.1"
+  }
 }

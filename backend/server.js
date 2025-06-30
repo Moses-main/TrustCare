@@ -9,10 +9,10 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 
 import authRoutes from "./routes/auth.js";
-import patientRoutes from "./routes/patients.js";
-import providerRoutes from "./routes/providers.js";
-import recordRoutes from "./routes/records.js";
-import blockchainRoutes from "./routes/blockchain.js";
+// import patientRoutes from "./routes/patients.js";
+// import providerRoutes from "./routes/providers.js";
+// import recordRoutes from "./routes/records.js";
+// import blockchainRoutes from "./routes/blockchain.js";
 import socketInjector from "./middleware/socketInjector.js";
 
 dotenv.config();
@@ -51,16 +51,16 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/dhrs", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+  // useNewUrlParser: true,
+  // useUnifiedTopology: true,
 });
 
 // Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/patients", patientRoutes);
-app.use("/api/providers", providerRoutes);
-app.use("/api/records", recordRoutes);
-app.use("/api/blockchain", blockchainRoutes);
+// app.use("/api/patients", patientRoutes);
+// app.use("/api/providers", providerRoutes);
+// app.use("/api/records", recordRoutes);
+// app.use("/api/blockchain", blockchainRoutes);
 
 // Socket.io events
 io.on("connection", (socket) => {
@@ -81,7 +81,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Something went wrong!" });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 4500;
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

@@ -1,8 +1,11 @@
 // backend/services/blockchainService.js
 import Web3 from "web3";
 import contract from "@truffle/contract";
-import HealthcareRecordsABI from "../contracts/HealthcareRecords.json" assert { type: "json" };
-import AccessControlABI from "../contracts/AccessControl.json" assert { type: "json" };
+import HealthcareRecordsABI from "../../smart-contracts/contracts/HealthcareRecords.json";
+// import HealthcareRecordsABI from "../contracts/HealthcareRecords.json";
+//  assert { type: "json" };
+import AccessControlABI from "../contracts/AccessControl.json";
+//  assert { type: "json" };
 
 class BlockchainService {
   constructor() {

@@ -14,7 +14,7 @@ This is the authentication module for the Digital Health Records System (DHRS). 
 ## 🔗 Base URL
 ```
 
-[http://localhost:5000/api/auth](http://localhost:5000/api/auth)
+[https://dhrs.onrender.com/api/auth](https://dhrs.onrender.com/api/auth)
 
 ````
 
@@ -205,8 +205,8 @@ Authorization: Bearer <jwt_token>
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/your-username/dhrs-platform.git
-cd dhrs-platform/backend
+git clone https://github.com/Moses-main/Decentralized-Healthcare-Records-System.git
+cd Decentralized-Healthcare-Records-System/backend
 ```
 
 ### 2. Install dependencies
@@ -219,7 +219,7 @@ npm install
 
 ```env
 PORT=5000
-MONGODB_URI=mongodb://localhost:27017/dhrs
+MONGODB_URI=https://dhrs.onrender.com/api/auth
 JWT_SECRET=yourSuperSecretKey
 FRONTEND_URL=http://localhost:3000
 ```
@@ -261,5 +261,4 @@ MIT © Moses Sunday
 
 ---
 
-Would you like me to generate this as a downloadable file or add additional documentation for the Patient and Provider routes as well?
 ```

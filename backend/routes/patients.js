@@ -10,9 +10,12 @@ import {
 
 const router = express.Router();
 
-router.get("/profile", auth, getPatientProfile);
-router.put("/profile", auth, updatePatientProfile);
-router.post("/grant-access", auth, grantAccessToProvider);
-router.get("/permissions", auth, getAccessPermissions);
+router.use(auth);
+// All patient routes require authentication
+
+router.get("/profile", getPatientProfile);
+router.put("/profile", updatePatientProfile);
+router.post("/grant-access", grantAccessToProvider);
+router.get("/permissions", getAccessPermissions);
 
 export default router;

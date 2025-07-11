@@ -1,16 +1,49 @@
 import crypto from "crypto";
 import User from "../models/User.js";
+import Patient from "../models/Patient.js";
 import { generateToken } from "../utils/generateToken.js";
 
-// REGISTER
+// // REGISTER
+// export const signup = async (req, res) => {
+//   const { name, email, password, role } = req.body;
+//   try {
+//     const userExists = await User.findOne({ email });
+//     if (userExists)
+//       return res.status(400).json({ message: "Email already in use" });
+
+//     const user = await User.create({ name, email, password, role });
+//     const token = generateToken(user._id);
+//     res.status(201).json({ token, user });
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
 export const signup = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, walletAddress } = req.body;
+
   try {
     const userExists = await User.findOne({ email });
     if (userExists)
       return res.status(400).json({ message: "Email already in use" });
 
-    const user = await User.create({ name, email, password, role });
+    const user = await User.create({
+      name,
+      email,
+      password,
+      role,
+      walletAddress,
+    });
+
+    // ✅ Create Patient profile if role is patient
+    if (role === "patient") {
+      await Patient.create({
+        walletAddress,
+        fullName: name,
+        contactInfo: { email },
+      });
+    }
+
     const token = generateToken(user._id);
     res.status(201).json({ token, user });
   } catch (err) {
@@ -18,7 +51,7 @@ export const signup = async (req, res) => {
   }
 };
 
-// LOGIN
+// // LOGIN
 export const login = async (req, res) => {
   const { email, password } = req.body;
   try {

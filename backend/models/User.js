@@ -5,7 +5,17 @@ import crypto from "crypto";
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  role: { type: String, enum: ["patient", "provider", "admin"], default: "patient" },
+  walletAddress: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  // ✅ ADD THIS
+  role: {
+    type: String,
+    enum: ["patient", "provider", "admin"],
+    default: "patient",
+  },
   password: { type: String, required: true, minlength: 6 },
   passwordResetToken: String,
   passwordResetExpires: Date,
@@ -25,7 +35,10 @@ userSchema.methods.correctPassword = async function (candidate, original) {
 
 userSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString("hex");
-  this.passwordResetToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 mins
   return resetToken;
 };

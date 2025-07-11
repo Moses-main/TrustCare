@@ -1,7 +1,3 @@
-Absolutely! Here's a complete `README.md` file that documents your **Auth API** built with Node.js, Express, MongoDB, and JWT.
-
----
-
 ## 📘 `README.md` — Auth API Documentation
 
 ```markdown

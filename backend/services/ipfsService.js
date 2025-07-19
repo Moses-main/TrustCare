@@ -14,6 +14,11 @@ class IPFSService {
   async uploadFile(fileBuffer, fileName, encryptionKey) {
     try {
       // Encrypt file before uploading
+      console.log(
+        "Uploading to IPFS at:",
+        this.ipfs.getEndpointConfig?.() || "default config"
+      );
+
       const encryptedData = CryptoJS.AES.encrypt(
         fileBuffer.toString("base64"),
         encryptionKey

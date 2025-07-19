@@ -14,7 +14,7 @@ import { Server } from "socket.io";
 import authRoutes from "./routes/auth.js";
 import patientRoutes from "./routes/patients.js";
 // import providerRoutes from "./routes/providers.js";
-// import recordRoutes from "./routes/records.js";
+import recordRoutes from "./routes/records.js";
 // import blockchainRoutes from "./routes/blockchain.js";
 import socketInjector from "./middleware/socketInjector.js";
 
@@ -83,7 +83,7 @@ app.use("/api/auth", authRoutes);
 
 app.use("/api/patients", patientRoutes);
 // app.use("/api/providers", providerRoutes);
-// app.use("/api/records", recordRoutes);
+app.use("/api/records", recordRoutes);
 // app.use("/api/blockchain", blockchainRoutes);
 
 // ================

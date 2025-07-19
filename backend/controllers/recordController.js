@@ -1,12 +1,22 @@
 import MedicalRecord from "../models/MedicalRecord.js";
 import blockchainService from "../services/blockchainService.js";
-import ipfsService from "../services/ipfsService.js";
+import {
+  uploadToIPFS,
+  downloadFromIPFS,
+  reuploadEncryptedJSON,
+} from "../services/pinataService.js";
 import crypto from "crypto";
 
 export const createMedicalRecord = async (req, res) => {
   try {
     const { patientWallet, recordType, metadata, clinical } = req.body;
 
+    // Validate file input
+    if (!req.file || !req.file.buffer) {
+      return res.status(400).json({ error: "No file uploaded." });
+    }
+
+    // Permission check
     const accessCheck = await blockchainService.checkAccess(
       patientWallet,
       req.user.walletAddress
@@ -17,9 +27,11 @@ export const createMedicalRecord = async (req, res) => {
         .json({ error: "No write access to patient records" });
     }
 
+    // Encryption key
     const encryptionKey = crypto.randomBytes(32).toString("hex");
 
-    const ipfsResult = await ipfsService.uploadFile(
+    // Upload encrypted file to IPFS
+    const ipfsResult = await uploadToIPFS(
       req.file.buffer,
       req.file.originalname,
       encryptionKey
@@ -29,6 +41,7 @@ export const createMedicalRecord = async (req, res) => {
       return res.status(500).json({ error: "Failed to upload file to IPFS" });
     }
 
+    // Write to blockchain
     const blockchainResult = await blockchainService.createMedicalRecord(
       patientWallet,
       req.user.walletAddress,
@@ -36,13 +49,25 @@ export const createMedicalRecord = async (req, res) => {
       recordType,
       req.user.privateKey
     );
-
     if (!blockchainResult.success) {
       return res
         .status(500)
         .json({ error: "Failed to create record on blockchain" });
     }
 
+    // Parse metadata and clinical info
+    let parsedMetadata = {};
+    let parsedClinical = {};
+    try {
+      parsedMetadata = JSON.parse(metadata);
+      parsedClinical = JSON.parse(clinical);
+    } catch (e) {
+      return res
+        .status(400)
+        .json({ error: "Invalid metadata or clinical JSON." });
+    }
+
+    // Save in DB
     const medicalRecord = new MedicalRecord({
       recordId: blockchainResult.recordId,
       blockchainTxHash: blockchainResult.transactionHash,
@@ -51,25 +76,25 @@ export const createMedicalRecord = async (req, res) => {
       ipfsHash: ipfsResult.hash,
       recordType,
       metadata: {
-        ...JSON.parse(metadata),
+        ...parsedMetadata,
         fileType: req.file.mimetype,
         fileSize: req.file.size,
         encryptionKey,
       },
-      clinical: JSON.parse(clinical),
+      clinical: parsedClinical,
       status: "finalized",
     });
 
     await medicalRecord.save();
 
-    req.io.to(patientWallet).emit("new-record", {
+    req.io?.to(patientWallet).emit("new-record", {
       recordId: blockchainResult.recordId,
       provider: req.user.walletAddress,
       recordType,
       createdAt: new Date(),
     });
 
-    res.json({
+    res.status(201).json({
       success: true,
       recordId: blockchainResult.recordId,
       transactionHash: blockchainResult.transactionHash,
@@ -113,7 +138,7 @@ export const getPatientRecords = async (req, res) => {
       }
     );
 
-    res.json({ records });
+    res.status(200).json({ count: records.length, records });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -136,7 +161,7 @@ export const downloadMedicalRecord = async (req, res) => {
       return res.status(403).json({ error: "No access to this record" });
     }
 
-    const fileResult = await ipfsService.downloadFile(
+    const fileResult = await downloadFromIPFS(
       record.ipfsHash,
       record.metadata.encryptionKey
     );
@@ -152,10 +177,17 @@ export const downloadMedicalRecord = async (req, res) => {
     });
     await record.save();
 
-    res.set({
-      "Content-Type": record.metadata.fileType,
-      "Content-Disposition": `attachment; filename="${record.metadata.title}"`,
-    });
+    const fallbackName = record.metadata.title || record.recordType || "record";
+
+    res.setHeader(
+      "Content-Type",
+      record.metadata.fileType || "application/octet-stream"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${fallbackName}"`
+    );
+
     res.send(fileResult.data);
   } catch (error) {
     res.status(500).json({ error: error.message });

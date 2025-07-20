@@ -15,7 +15,7 @@ const router = express.Router();
 router.post("/create", auth, upload.single("file"), createMedicalRecord);
 
 // Get all records for a patient (by wallet)
-router.get("/patient/:patientWallet", auth, getPatientRecords);
+router.get("/:patientWallet", auth, getPatientRecords);
 
 // Download a record
 router.get("/download/:recordId", auth, downloadMedicalRecord);

@@ -146,50 +146,30 @@ export const getPatientRecords = async (req, res) => {
 
 export const downloadMedicalRecord = async (req, res) => {
   try {
-    const { recordId } = req.params;
+    const recordId = req.params.recordId;
 
     const record = await MedicalRecord.findOne({ recordId });
-    if (!record) {
-      return res.status(404).json({ error: "Record not found" });
-    }
+    if (!record) return res.status(404).json({ message: "Record not found" });
+    // console.log(record.ipfsHash);
+    const cid = record.ipfsHash || record.metadata.ipfsHash; // Adjust based on your schema
 
-    const accessCheck = await blockchainService.checkAccess(
-      record.patientWallet,
-      req.user.walletAddress
-    );
-    if (!accessCheck.success || !accessCheck.permission.canRead) {
-      return res.status(403).json({ error: "No access to this record" });
-    }
+    const fileBuffer = await downloadFromIPFS(cid);
 
-    const fileResult = await downloadFromIPFS(
-      record.ipfsHash,
-      record.metadata.encryptionKey
-    );
-    if (!fileResult.success) {
-      return res.status(500).json({ error: "Failed to download file" });
-    }
+    // Determine file type for headers (adjust as needed)
+    const fileName =
+      `${record.recordType}_${record._id}.json` ||
+      `${record.recordType}_${record._id}.pdf`; // or .pdf, etc.
 
-    record.accessLog.push({
-      accessedBy: req.user.walletAddress,
-      accessTime: new Date(),
-      action: "download",
-      ipAddress: req.ip,
+    res.set({
+      "Content-Disposition": `attachment; filename="${fileName}"`,
+      "Content-Type": "application/octet-stream",
     });
-    await record.save();
 
-    const fallbackName = record.metadata.title || record.recordType || "record";
-
-    res.setHeader(
-      "Content-Type",
-      record.metadata.fileType || "application/octet-stream"
-    );
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="${fallbackName}"`
-    );
-
-    res.send(fileResult.data);
+    res.send(fileBuffer);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Download error:", error.message);
+    res
+      .status(500)
+      .json({ message: "Failed to download file", error: error.message });
   }
 };

@@ -93,7 +93,10 @@ export async function uploadToIPFS(buffer, fileName, encryptionKey) {
 export const downloadFromIPFS = async (cid) => {
   try {
     const response = await pinata.gateways.public.get(cid);
-    return response.data; // This is already a buffer or JSON
+    // const url = await pinata.gateways.convert(cid);
+    // console.log(url);
+
+    return response; // This is already a buffer or JSON
   } catch (error) {
     console.error("Download from IPFS failed:", error.message);
     throw new Error("Failed to fetch file from IPFS: " + error.message);

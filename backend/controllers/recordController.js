@@ -83,6 +83,7 @@ export const createMedicalRecord = async (req, res) => {
       },
       clinical: parsedClinical,
       status: "finalized",
+      isActive: true,
     });
 
     await medicalRecord.save();

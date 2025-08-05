@@ -1,0 +1,48 @@
+.Nav-container{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    padding-top: 20px;
+}
+.nav-logos{
+    width: 100px;
+    height: 100px;
+}
+.nav-links{
+    gap: 20px;
+    display: flex;
+}
+.nav-link{
+    font-size: 14px;
+    text-decoration: none;
+    color: #333333;
+    border-style: groove;
+    border-width: 1px;
+    padding: 10px 20px;
+    width: fit-content;
+    height: 36px;
+    background-color: #FFFFFF;
+    border-radius: 50px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+.nav-link:hover {
+    background-color: #B30000;
+    color: #FFFFFF;
+    cursor: pointer;
+}
+.nav-container {
+    background-color: #FFFFFF;
+}
+.emergency-btn{
+    background-color: black;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+.emergency-btn:hover {
+    background-color: #B30000;
+    cursor: pointer;
+}

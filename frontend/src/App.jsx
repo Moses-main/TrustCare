@@ -46,14 +46,14 @@ import { Provider } from "react-redux";
 import { ThemeProvider, createTheme } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
 
-import store from "./store/store";
-import { useAuth } from "./hooks/useAuth";
+// import store from "./store/store";
+// import { useAuth } from "./hooks/useAuth";
 import { useWeb3 } from "./hooks/useWeb3";
 
 // Components
-import Navbar from "./components/Layout/Navbar";
-import Footer from "./components/Layout/Footer";
-import LoadingSpinner from "./components/Common/LoadingSpinner";
+// import Navbar from "./components/Layout/Navbar";
+// import Footer from "./components/Layout/Footer";
+// import LoadingSpinner from "./components/Common/LoadingSpinner";
 
 // Pages
 import Landing from "./pages/Landing";

@@ -1,7 +1,7 @@
 // frontend/src/hooks/useWeb3.js
 import { useState, useEffect, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import Web3 from 'web3';
+import { ethers } from 'ethers';
 import detectEthereumProvider from '@metamask/detect-provider';
 import { setWeb3, setAccounts, setNetworkId } from '../store/slices/web3Slice';
 
@@ -16,13 +16,13 @@ export const useWeb3 = () => {
       const provider = await detectEthereumProvider();
       
       if (provider) {
-        const web3 = new Web3(provider);
-        const accounts = await web3.eth.getAccounts();
-        const networkId = await web3.eth.net.getId();
+        const ethersProvider = new ethers.BrowserProvider(provider);
+        const network = await ethersProvider.getNetwork();
+        const accounts = await provider.request({ method: 'eth_accounts' });
         
-        dispatch(setWeb3(web3));
+        dispatch(setWeb3(ethersProvider));
         dispatch(setAccounts(accounts));
-        dispatch(setNetworkId(networkId));
+        dispatch(setNetworkId(Number(network.chainId)));
         
         setIsWeb3Enabled(true);
         

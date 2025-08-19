@@ -33,6 +33,14 @@ const Landing = () => {
           </div>
         </div>
         <div>
+          {/* Hero Icon */}
+          <div aria-hidden style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:72, height:72, borderRadius:16, marginBottom:12,
+            background:'linear-gradient(135deg, #111 0%, #4b5563 100%)', boxShadow:'0 10px 30px rgba(0,0,0,0.15)'}}>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2l7 3v6c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V5l7-3z" fill="#fff" opacity="0.95"/>
+              <path d="M9.5 11.5h1.75V9.75h1.5V11.5H14.5v1.5h-1.75v1.75h-1.5V13H9.5v-1.5z" fill="#111"/>
+            </svg>
+          </div>
           <h1 style={{ fontSize:52, margin:'8px 0 12px 0', lineHeight:1.05 }}>Secure, patient‑controlled healthcare records</h1>
           <p style={{ fontSize:18, color:'#555', margin:'0 0 20px 0' }}>
             DHRS enables patients and providers to share, verify, and audit medical records with privacy and integrity.
@@ -49,6 +57,7 @@ const Landing = () => {
           {error && <div style={{ color:'#b91c1c', marginTop:10 }}>{error}</div>}
         </div>
       </section>
+
 
       {/* FEATURES */}
       <section style={{ maxWidth:1200, margin:'0 auto', padding:'20px', display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(240px, 1fr))', gap:16 }}>
@@ -68,6 +77,55 @@ const Landing = () => {
             <li>Patients grant or revoke provider access anytime.</li>
             <li>Providers can verify integrity and provenance instantly.</li>
           </ol>
+        </div>
+      </section>
+
+      {/* ORGANIZED NAVIGATION */}
+      <section style={{ maxWidth:1200, margin:'0 auto', padding:'10px 20px 40px', display:'grid', gap:16 }}>
+        <h3 style={{ margin:'8px 0' }}>Explore DHRS</h3>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(240px, 1fr))', gap:16 }}>
+          {/* Patient */}
+          <div style={{ border:'1px solid #eee', borderRadius:16, background:'#fff', padding:16 }}>
+            <h4 style={{ margin:'0 0 8px 0' }}>Patient</h4>
+            <div style={{ display:'grid', gap:8 }}>
+              <Link to="/dashboard">Dashboard</Link>
+              <Link to="/appointments">Appointments</Link>
+              <Link to="/medications">Medications</Link>
+              <Link to="/wellness">Wellness</Link>
+              <Link to="/care-team">Care Team</Link>
+              <Link to="/access-management">Access Management</Link>
+            </div>
+          </div>
+          {/* Provider */}
+          <div style={{ border:'1px solid #eee', borderRadius:16, background:'#fff', padding:16 }}>
+            <h4 style={{ margin:'0 0 8px 0' }}>Provider</h4>
+            <div style={{ display:'grid', gap:8 }}>
+              <Link to="/patients">Patients</Link>
+              <Link to="/create-record">Create Record</Link>
+              <Link to="/records">Records</Link>
+            </div>
+          </div>
+          {/* Common */}
+          <div style={{ border:'1px solid #eee', borderRadius:16, background:'#fff', padding:16 }}>
+            <h4 style={{ margin:'0 0 8px 0' }}>Common</h4>
+            <div style={{ display:'grid', gap:8 }}>
+              <Link to="/notifications">Notifications</Link>
+              <Link to="/messages">Messages</Link>
+              <Link to="/invoices">Invoices</Link>
+              <Link to="/profile">Profile</Link>
+              <Link to="/settings">Settings</Link>
+            </div>
+          </div>
+          {/* Info */}
+          <div style={{ border:'1px solid #eee', borderRadius:16, background:'#fff', padding:16 }}>
+            <h4 style={{ margin:'0 0 8px 0' }}>Information</h4>
+            <div style={{ display:'grid', gap:8 }}>
+              <Link to="/about">About</Link>
+              <Link to="/privacy">Privacy</Link>
+              <Link to="/terms">Terms</Link>
+              <Link to="/contact">Contact</Link>
+            </div>
+          </div>
         </div>
       </section>
     </div>

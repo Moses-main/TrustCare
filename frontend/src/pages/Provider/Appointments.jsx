@@ -1,452 +1,244 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { 
-  Box, 
-  Heading, 
-  Button, 
-  useDisclosure, 
-  Flex, 
-  Spinner,
-  useToast,
-  Text,
-  Tabs, 
-  TabList, 
-  TabPanels, 
-  Tab, 
-  TabPanel,
-  Select,
-  HStack,
-  VStack,
-  InputGroup,
-  InputLeftElement,
-  Input,
-  Icon,
-  Badge,
-  useColorModeValue,
-  IconButton,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  useBreakpointValue,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
-  Divider,
-  Tooltip
-} from '@chakra-ui/react';
-import { 
-  SearchIcon, 
-  CalendarIcon, 
-  ChevronDownIcon, 
-  TimeIcon, 
-  CheckIcon, 
-  CloseIcon,
-  RepeatIcon,
-  InfoOutlineIcon
-} from '@chakra-ui/icons';
-import { format, parseISO, isToday, isTomorrow, isThisWeek, isAfter, isBefore, addDays, startOfDay, endOfDay } from 'date-fns';
-import { useAuth } from '../../contexts/AuthContext';
-import { appointmentsAPI } from '../../services/api';
-import AppointmentList from '../../components/Appointments/AppointmentList';
-import AppointmentDetails from '../../components/Appointments/AppointmentDetails';
-import { APPOINTMENT_STATUS, APPOINTMENT_STATUS_COLORS } from '../../constants/appointments';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { FaPlus, FaCalendarAlt, FaUserMd, FaClock, FaMapMarkerAlt, FaSearch } from 'react-icons/fa';
 
-// Status filter options
-const STATUS_FILTERS = {
-  ALL: 'all',
-  ...APPOINTMENT_STATUS
-};
-
-// Date filter options
-const DATE_FILTERS = {
-  TODAY: 'today',
-  TOMORROW: 'tomorrow',
-  THIS_WEEK: 'this_week',
-  NEXT_WEEK: 'next_week',
-  CUSTOM: 'custom'
-};
-
-const ProviderAppointments = () => {
-  const { user } = useAuth();
-  const toast = useToast();
+const Appointments = () => {
   const [appointments, setAppointments] = useState([]);
-  const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedAppointment, setSelectedAppointment] = useState(null);
-  const [filters, setFilters] = useState({
-    status: STATUS_FILTERS.ALL,
-    dateRange: DATE_FILTERS.TODAY,
-    searchQuery: '',
-    startDate: new Date(),
-    endDate: addDays(new Date(), 7)
-  });
-  
-  const isMobile = useBreakpointValue({ base: true, md: false });
-  const cardBg = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('all');
 
-  // Fetch appointments
-  const fetchAppointments = useCallback(async () => {
-    if (!user?.userId) return;
-    
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await appointmentsAPI.getProviderAppointments(user.userId);
-      setAppointments(response.data || []);
-    } catch (err) {
-      console.error('Error fetching appointments:', err);
-      setError('Failed to load appointments. Please try again.');
-      toast({
-        title: 'Error',
-        description: 'Failed to load appointments. Please try again.',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [user?.userId, toast]);
-
-  // Initial data fetch
+  // Mock data - replace with API call in production
   useEffect(() => {
-    fetchAppointments();
-  }, [fetchAppointments]);
-
-  // Filter appointments based on filters
-  useEffect(() => {
-    if (!appointments.length) {
-      setFilteredAppointments([]);
-      return;
-    }
-
-    let result = [...appointments];
-
-    // Filter by status
-    if (filters.status !== STATUS_FILTERS.ALL) {
-      result = result.filter(apt => apt.status === filters.status);
-    }
-
-    // Filter by date range
-    const now = new Date();
-    switch (filters.dateRange) {
-      case DATE_FILTERS.TODAY:
-        result = result.filter(apt => isToday(parseISO(apt.appointmentDate)));
-        break;
-      case DATE_FILTERS.TOMORROW:
-        result = result.filter(apt => isTomorrow(parseISO(apt.appointmentDate)));
-        break;
-      case DATE_FILTERS.THIS_WEEK:
-        result = result.filter(apt => isThisWeek(parseISO(apt.appointmentDate)));
-        break;
-      case DATE_FILTERS.NEXT_WEEK:
-        const nextWeekStart = addDays(now, 7 - now.getDay());
-        const nextWeekEnd = addDays(nextWeekStart, 6);
-        result = result.filter(apt => {
-          const aptDate = parseISO(apt.appointmentDate);
-          return isAfter(aptDate, nextWeekStart) && isBefore(aptDate, nextWeekEnd);
-        });
-        break;
-      case DATE_FILTERS.CUSTOM:
-        result = result.filter(apt => {
-          const aptDate = parseISO(apt.appointmentDate);
-          return isAfter(aptDate, filters.startDate) && isBefore(aptDate, filters.endDate);
-        });
-        break;
-      default:
-        break;
-    }
-
-    // Filter by search query
-    if (filters.searchQuery) {
-      const query = filters.searchQuery.toLowerCase();
-      result = result.filter(apt => 
-        apt.patient?.name?.toLowerCase().includes(query) ||
-        apt.patient?.email?.toLowerCase().includes(query) ||
-        apt.serviceType?.toLowerCase().includes(query) ||
-        apt.notes?.toLowerCase().includes(query)
-      );
-    }
-
-    // Sort by date (earliest first)
-    result.sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate));
-    
-    setFilteredAppointments(result);
-  }, [appointments, filters]);
-
-  // Handle status update
-  const handleStatusUpdate = async (appointmentId, newStatus) => {
-    try {
-      await appointmentsAPI.updateAppointmentStatus(appointmentId, newStatus);
-      
-      // Update local state
-      setAppointments(prev => 
-        prev.map(apt => 
-          apt._id === appointmentId 
-            ? { ...apt, status: newStatus, updatedAt: new Date().toISOString() } 
-            : apt
-        )
-      );
-      
-      toast({
-        title: 'Appointment updated',
-        description: `Appointment marked as ${newStatus}`,
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-    } catch (err) {
-      console.error('Error updating appointment status:', err);
-      toast({
-        title: 'Error',
-        description: 'Failed to update appointment status. Please try again.',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-    }
-  };
-
-  // Handle appointment selection
-  const handleAppointmentSelect = (appointment) => {
-    setSelectedAppointment(appointment);
-  };
-
-  // Handle filter changes
-  const handleFilterChange = (name, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  // Get appointment stats
-  const appointmentStats = useMemo(() => {
-    const stats = {
-      total: appointments.length,
-      scheduled: 0,
-      completed: 0,
-      cancelled: 0,
-      noShow: 0
-    };
-
-    appointments.forEach(apt => {
-      if (apt.status === APPOINTMENT_STATUS.SCHEDULED) stats.scheduled++;
-      else if (apt.status === APPOINTMENT_STATUS.COMPLETED) stats.completed++;
-      else if (apt.status === APPOINTMENT_STATUS.CANCELLED) stats.cancelled++;
-      else if (apt.status === APPOINTMENT_STATUS.NO_SHOW) stats.noShow++;
-    });
-
-    return stats;
-  }, [appointments]);
-          description: 'Failed to load appointments',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-      } finally {
+    // Simulate API call
+    const fetchAppointments = async () => {
+      try {
+        // TODO: Replace with actual API call
+        const mockAppointments = [
+          {
+            id: 1,
+            date: '2023-06-15',
+            time: '10:00 AM',
+            doctor: 'Dr. Sarah Johnson',
+            specialty: 'Cardiology',
+            status: 'upcoming',
+            location: 'Main Hospital, Room 302',
+            notes: 'Annual checkup',
+          },
+          {
+            id: 2,
+            date: '2023-06-10',
+            time: '02:30 PM',
+            doctor: 'Dr. Michael Chen',
+            specialty: 'Dermatology',
+            status: 'completed',
+            location: 'Dermatology Center, Suite 101',
+            notes: 'Follow-up for skin condition',
+          },
+          {
+            id: 3,
+            date: '2023-06-20',
+            time: '11:15 AM',
+            doctor: 'Dr. Emily Wilson',
+            specialty: 'Pediatrics',
+            status: 'upcoming',
+            location: 'Children\'s Wing, Room 205',
+            notes: 'Vaccination',
+          },
+        ];
+        
+        setAppointments(mockAppointments);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching appointments:', error);
         setLoading(false);
       }
     };
 
     fetchAppointments();
-  }, [providerId]);
+  }, []);
 
-  const filterAppointments = () => {
-    const now = new Date();
-    let filtered = [...appointments];
+  const filteredAppointments = appointments.filter(appointment => {
+    const matchesSearch = 
+      appointment.doctor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      appointment.specialty.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      appointment.notes.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = 
+      selectedStatus === 'all' || 
+      appointment.status === selectedStatus;
+    
+    return matchesSearch && matchesStatus;
+  });
 
-    // Apply date filter
-    switch (dateFilter) {
-      case 'today':
-        filtered = filtered.filter(apt => isToday(new Date(apt.appointmentDate)));
-        break;
-      case 'tomorrow':
-        filtered = filtered.filter(apt => isTomorrow(new Date(apt.appointmentDate)));
-        break;
-      case 'thisWeek':
-        filtered = filtered.filter(apt => isThisWeek(new Date(apt.appointmentDate)));
-        break;
-      case 'upcoming':
-        filtered = filtered.filter(apt => new Date(apt.appointmentDate) > now);
-        break;
-      case 'past':
-        filtered = filtered.filter(apt => new Date(apt.appointmentDate) < now);
-        break;
-      default:
-        break;
-    }
-
-    // Apply search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(apt => 
-        apt.patientId?.name?.toLowerCase().includes(query) ||
-        apt.serviceType?.toLowerCase().includes(query) ||
-        apt.appointmentId?.toLowerCase().includes(query)
-      );
-    }
-
-    // Sort by date
-    return filtered.sort((a, b) => 
-      new Date(a.appointmentDate) - new Date(b.appointmentDate)
+  const getStatusBadge = (status) => {
+    const statusClasses = {
+      upcoming: 'bg-yellow-100 text-yellow-800',
+      completed: 'bg-green-100 text-green-800',
+      cancelled: 'bg-red-100 text-red-800',
+    };
+    
+    return (
+      <span 
+        className={`px-2 py-1 text-xs font-medium rounded-full ${statusClasses[status] || 'bg-gray-100 text-gray-800'}`}
+      >
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </span>
     );
   };
 
-  const handleStatusUpdate = async (appointmentId, newStatus) => {
-    try {
-      await axios.put(`/api/appointments/${appointmentId}/status`, { status: newStatus });
-      
-      setAppointments(prevAppointments =>
-        prevAppointments.map(apt =>
-          apt._id === appointmentId ? { ...apt, status: newStatus } : apt
-        )
-      );
-      
-      toast({
-        title: 'Success',
-        description: `Appointment marked as ${newStatus}`,
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-    } catch (error) {
-      console.error('Error updating appointment status:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update appointment status',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-    }
-  };
-
-  const filteredAppointments = filterAppointments();
-  const upcomingAppointments = filteredAppointments.filter(
-    apt => new Date(apt.appointmentDate) >= new Date()
-  );
-  
-  const pastAppointments = filteredAppointments.filter(
-    apt => new Date(apt.appointmentDate) < new Date()
-  );
-
   if (loading) {
     return (
-      <Flex justify="center" align="center" minH="50vh">
-        <Spinner size="xl" />
-      </Flex>
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
     );
   }
 
   return (
-    <Box maxW="1200px" mx="auto" p={6}>
-      <Flex justify="space-between" align="center" mb={6} flexWrap="wrap" gap={4}>
-        <Heading as="h1" size="xl">Appointments</Heading>
-        
-        <HStack spacing={4} flexWrap="wrap">
-          <Select 
-            value={dateFilter} 
-          >
-            <option value={DATE_FILTERS.TODAY}>Today</option>
-            <option value={DATE_FILTERS.TOMORROW}>Tomorrow</option>
-            <option value={DATE_FILTERS.THIS_WEEK}>This Week</option>
-            <option value={DATE_FILTERS.NEXT_WEEK}>Next Week</option>
-            <option value={DATE_FILTERS.CUSTOM}>Custom Range</option>
-          </Select>
-          
-          <Menu>
-            <MenuButton 
-              as={Button} 
-              rightIcon={<ChevronDownIcon />}
-              variant="outline"
-              size={isMobile ? 'md' : 'lg'}
-              minW="150px"
-              textAlign="left"
-            >
-              {filters.status === STATUS_FILTERS.ALL ? 'All Status' : filters.status}
-            </MenuButton>
-            <MenuList>
-              <MenuItem onClick={() => handleFilterChange('status', STATUS_FILTERS.ALL)}>
-                All Status
-              </MenuItem>
-              {Object.values(APPOINTMENT_STATUS).map(status => (
-                <MenuItem 
-                  key={status} 
-                  onClick={() => handleFilterChange('status', status)}
-                  display="flex"
-                  alignItems="center"
-                  gap={2}
-                >
-                  <Box 
-                    w="10px" 
-                    h="10px" 
-                    borderRadius="full" 
-                    bg={APPOINTMENT_STATUS_COLORS[status] || 'gray.300'}
-                  />
-                  {status.charAt(0).toUpperCase() + status.slice(1).toLowerCase().replace('_', ' ')}
-                </MenuItem>
-              ))}
-            </MenuList>
-          </Menu>
-          
-          <Tooltip label="Refresh appointments">
-            <IconButton
-              icon={<RepeatIcon />}
-              onClick={fetchAppointments}
-              aria-label="Refresh"
-              size={isMobile ? 'md' : 'lg'}
-              isLoading={loading}
-            />
-          </Tooltip>
-        </HStack>
-      </Flex>
-      
-      {filters.dateRange === DATE_FILTERS.CUSTOM && (
-        <Flex mt={4} gap={4} flexWrap="wrap">
-          <FormControl maxW="200px">
-            <FormLabel fontSize="sm">Start Date</FormLabel>
-            <Input
-              type="date"
-              value={format(filters.startDate, 'yyyy-MM-dd')}
-              onChange={(e) => handleFilterChange('startDate', new Date(e.target.value))}
-              size={isMobile ? 'md' : 'sm'}
-            />
-          </FormControl>
-          <FormControl maxW="200px">
-            <FormLabel fontSize="sm">End Date</FormLabel>
-            <Input
-              type="date"
-              value={format(filters.endDate, 'yyyy-MM-dd')}
-              onChange={(e) => handleFilterChange('endDate', new Date(e.target.value))}
-              min={format(filters.startDate, 'yyyy-MM-dd')}
-              size={isMobile ? 'md' : 'sm'}
-            />
-          </FormControl>
-        </Flex>
-      )}
-          <TabPanel p={4}>
-            {pastAppointments.length > 0 ? (
-              <AppointmentList 
-                appointments={pastAppointments} 
-                userType="provider"
-                isPast
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">My Appointments</h2>
+          <p className="mt-1 text-sm text-gray-600">
+            Manage your upcoming and past medical appointments
+          </p>
+        </div>
+        <Link
+          to="/patient/appointments/new"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          <FaPlus className="mr-2" />
+          New Appointment
+        </Link>
+      </div>
+
+      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FaSearch className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Search appointments..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
-            ) : (
-              <Box textAlign="center" py={10} bg="gray.50" borderRadius="md">
-                <Text fontSize="lg" color="gray.500">
-                  No past appointments found.
-                </Text>
-              </Box>
-            )}
-          </TabPanel>
-        </TabPanels>
-      </Tabs>
-    </Box>
+            </div>
+            <div className="w-full md:w-auto">
+              <select
+                className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+              >
+                <option value="all">All Status</option>
+                <option value="upcoming">Upcoming</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {filteredAppointments.length === 0 ? (
+          <div className="p-8 text-center">
+            <FaCalendarAlt className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">No appointments found</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              {searchTerm || selectedStatus !== 'all' 
+                ? 'Try adjusting your search or filter criteria.'
+                : 'You have no appointments scheduled.'}
+            </p>
+            <div className="mt-6">
+              <Link
+                to="/patient/appointments/new"
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <FaPlus className="-ml-1 mr-2 h-5 w-5" />
+                New Appointment
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <ul className="divide-y divide-gray-200">
+            {filteredAppointments.map((appointment) => (
+              <li key={appointment.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                      <FaUserMd className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div className="ml-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        {appointment.doctor}
+                      </div>
+                      <div className="text-sm text-gray-500">{appointment.specialty}</div>
+                    </div>
+                  </div>
+                  <div className="mt-2 sm:mt-0 text-sm text-gray-500">
+                    <div className="flex items-center">
+                      <FaCalendarAlt className="mr-1.5 h-4 w-4 flex-shrink-0 text-gray-400" />
+                      {new Date(appointment.date).toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </div>
+                    <div className="flex items-center mt-1">
+                      <FaClock className="mr-1.5 h-4 w-4 flex-shrink-0 text-gray-400" />
+                      {appointment.time}
+                    </div>
+                  </div>
+                  <div className="mt-2 sm:mt-0">
+                    {getStatusBadge(appointment.status)}
+                  </div>
+                </div>
+                <div className="mt-4 sm:ml-14">
+                  <div className="flex items-center text-sm text-gray-500">
+                    <FaMapMarkerAlt className="mr-1.5 h-4 w-4 flex-shrink-0 text-gray-400" />
+                    {appointment.location}
+                  </div>
+                  {appointment.notes && (
+                    <p className="mt-2 text-sm text-gray-600">
+                      <span className="font-medium">Notes:</span> {appointment.notes}
+                    </p>
+                  )}
+                  <div className="mt-3 flex space-x-3">
+                    {appointment.status === 'upcoming' && (
+                      <>
+                        <button
+                          type="button"
+                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                          Reschedule
+                        </button>
+                        <button
+                          type="button"
+                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    )}
+                    <Link
+                      to={`/patient/appointments/${appointment.id}`}
+                      className="text-sm font-medium text-blue-600 hover:text-blue-500"
+                    >
+                      View Details
+                    </Link>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
   );
 };
 
-export default ProviderAppointments;
+export default Appointments;

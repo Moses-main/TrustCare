@@ -1,0 +1,18 @@
+.metrics-container {
+  display: flex;
+  text-align: center;
+  flex-direction: row;
+  gap: 100px;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  height: 256px;
+  background-color: white;
+}
+.num1{
+    font-size: 64px;
+    color: #B30000;
+}
+.num2{
+    font-size: 22px;
+}

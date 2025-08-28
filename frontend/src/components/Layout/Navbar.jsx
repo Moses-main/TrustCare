@@ -13,7 +13,9 @@ import {
   FaPills,
   FaUsers,
   FaCalendarAlt,
+  FaCog,
 } from "react-icons/fa";
+// Removed direct UserContext import as we'll use AuthContext
 
 // Reusable NavLink component
 const NavLink = ({ to, icon, children, onClick }) => (
@@ -45,16 +47,36 @@ const Navbar = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userType, setUserType] = useState("patient");
-  const [userName, setUserName] = useState("");
-  
-  // Refs
-  const mobileMenuRef = useRef(null);
-  const profileMenuRef = useRef(null);
-  
-  // Hooks
+  const [user, setUser] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const mobileMenuRef = useRef(null);
+  const profileMenuRef = useRef(null);
+
+  // Check authentication status on mount and when location changes
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    
+    if (token && storedUser) {
+      setIsAuthenticated(true);
+      setUser(JSON.parse(storedUser));
+    } else {
+      setIsAuthenticated(false);
+      setUser(null);
+    }
+  }, [location]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setIsAuthenticated(false);
+    setUser(null);
+    navigate('/login');
+  };
+  
+  const userType = user?.role || "patient";
+  const userName = user?.name || "";
 
   // Toggle mobile menu
   const toggleMobileMenu = () => {
@@ -101,13 +123,9 @@ const Navbar = () => {
   // Check authentication status
   useEffect(() => {
     const checkAuth = () => {
-      const authStatus = localStorage.getItem("isAuthenticated") === "true";
-      const type = localStorage.getItem("userType") || "patient";
-      const name = localStorage.getItem("userName") || "";
-
-      setIsAuthenticated(authStatus);
-      setUserType(type);
-      setUserName(name);
+      // The UserContext now handles authentication state
+      // This effect is kept for potential future use with localStorage sync
+      // between tabs if needed
     };
 
     // Initial check
@@ -117,25 +135,6 @@ const Navbar = () => {
     window.addEventListener("storage", checkAuth);
     return () => window.removeEventListener("storage", checkAuth);
   }, []);
-
-  // Logout handler
-  const handleLogout = () => {
-    // Clear auth data from localStorage
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("userType");
-    localStorage.removeItem("userName");
-    localStorage.removeItem("licenseNumber");
-
-    // Update state
-    setIsAuthenticated(false);
-    setUserType("patient");
-    setUserName("");
-    setIsMobileMenuOpen(false);
-    setIsProfileOpen(false);
-
-    // Redirect to home page
-    navigate("/");
-  };
 
   // Navigation items for patient
   const patientNavItems = [
@@ -260,8 +259,9 @@ const Navbar = () => {
                   ))}
                 </div>
 
-                {/* Profile dropdown */}
-                <div className="ml-4 relative" ref={profileMenuRef}>
+                {/* Profile dropdown and mobile menu button */}
+              <div className="flex items-center space-x-2">
+                <div className="relative" ref={profileMenuRef}>
                   <button
                     onClick={toggleProfileMenu}
                     className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -277,163 +277,70 @@ const Navbar = () => {
                     </span>
                   </button>
 
-                  {/* Dropdown menu */}
+                  {/* Profile dropdown menu */}
                   {isProfileOpen && (
                     <div
-                      className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                      className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 z-50"
                       role="menu"
                       aria-orientation="vertical"
-                      tabIndex="-1"
+                      aria-labelledby="user-menu"
                     >
-                      <div className="py-1">
-                        <Link
-                          to={userType === 'patient' ? '/patient/profile' : '/provider/profile'}
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                          onClick={() => setIsProfileOpen(false)}
-                        >
-                          <FaUserCircle className="text-lg mr-2" />
-                          Your Profile
-                        </Link>
-                        <Link
-                          to="/settings"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                          onClick={() => setIsProfileOpen(false)}
-                        >
-                          <FaUserCircle className="text-lg mr-2" />
-                          Settings
-                        </Link>
-                        <button
-                          onClick={handleLogout}
-                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center"
-                        >
-                          <FaSignOutAlt className="text-lg mr-2" />
-                          Sign out
-                        </button>
-                      </div>
+                      <Link
+                        to="/profile"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        role="menuitem"
+                        onClick={() => setIsProfileOpen(false)}
+                      >
+                        Your Profile
+                      </Link>
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          setIsProfileOpen(false);
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                        role="menuitem"
+                      >
+                        Sign out
+                      </button>
                     </div>
                   )}
                 </div>
+
+                {/* Mobile menu button - only visible on small screens */}
+                <div className="md:hidden">
+                  <button
+                    onClick={toggleMobileMenu}
+                    className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                    aria-expanded={isMobileMenuOpen}
+                    aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+                  >
+                    {isMobileMenuOpen ? (
+                      <FaTimes className="block h-6 w-6" aria-hidden="true" />
+                    ) : (
+                      <FaBars className="block h-6 w-6" aria-hidden="true" />
+                    )}
+                  </button>
+                </div>
+              </div>
               </>
             ) : (
               <div className="flex items-center space-x-4">
                 <Link
                   to="/login"
-                  className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
+                  className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
                 >
-                  Sign In
+                  Sign in
                 </Link>
                 <Link
-                  to="/signup"
+                  to="/register"
                   className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700"
                 >
-                  Sign Up
+                  Sign up
                 </Link>
               </div>
             )}
           </div>
-
-          {/* Mobile menu button */}
-          <div className="flex md:hidden">
-            <button
-              onClick={toggleMobileMenu}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
-              aria-expanded={isMobileMenuOpen}
-              aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
-            >
-              {isMobileMenuOpen ? (
-                <FaTimes className="block h-6 w-6" aria-hidden="true" />
-              ) : (
-                <FaBars className="block h-6 w-6" aria-hidden="true" />
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile menu */}
-      <div 
-        ref={mobileMenuRef}
-        className={`md:hidden bg-white shadow-lg rounded-b-lg transition-all duration-300 ease-in-out ${
-          isMobileMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
-        }`}
-      >
-        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-          {isAuthenticated ? (
-            <>
-              <div className="px-2 pt-2 pb-3 space-y-1">
-                {(userType === 'patient' ? patientNavItems : providerNavItems).map((item) => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {item.icon}
-                    {item.name}
-                  </Link>
-                ))}
-              </div>
-              <div className="pt-4 pb-3 border-t border-gray-200">
-                <div className="flex items-center px-5">
-                  <div className="flex-shrink-0">
-                    <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                      {userType === 'patient' ? <FaUserInjured size={20} /> : <FaUserMd size={20} />}
-                    </div>
-                  </div>
-                  <div className="ml-3">
-                    <div className="text-base font-medium text-gray-800">
-                      {userName || 'User'}
-                    </div>
-                    <div className="text-sm font-medium text-gray-500">
-                      {userType === 'patient' ? 'Patient' : 'Healthcare Provider'}
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-3 px-2 space-y-1">
-                  <Link
-                    to={userType === 'patient' ? '/patient/profile' : '/provider/profile'}
-                    className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <FaUserCircle className="text-lg mr-2" />
-                    Your Profile
-                  </Link>
-                  <Link
-                    to="/settings"
-                    className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <FaUserCircle className="text-lg mr-2" />
-                    Settings
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center px-4 py-3 text-base font-medium text-red-600 hover:bg-gray-100 rounded-md"
-                  >
-                    <FaSignOutAlt className="text-lg mr-3" />
-                    Sign out
-                  </button>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="px-2 pt-2 pb-3 space-y-3">
-              <Link
-                to="/login"
-                className="block w-full text-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Sign In
-              </Link>
-              <Link
-                to="/signup"
-                className="block w-full text-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Sign Up
-              </Link>
-            </div>
-          )}
         </div>
       </div>
     </nav>

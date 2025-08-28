@@ -28,12 +28,25 @@ export const UserProvider = ({ children }) => {
     loadUser();
   }, []);
 
-  const login = async (credentials) => {
-    const response = await authAPI.login(credentials);
-    const { token, user } = response.data;
-    localStorage.setItem('token', token);
-    setUser(user);
-    return user;
+  const login = async ({ email, password, userType }) => {
+    try {
+      const response = await authAPI.login({ email, password, role: userType });
+      const { token, user } = response.data;
+      
+      if (!token) {
+        throw new Error('No token received');
+      }
+      
+      localStorage.setItem('token', token);
+      setUser(user);
+      
+      // Return the full response for the Login component to handle
+      return { token, user };
+    } catch (error) {
+      console.error('Login error:', error);
+      // Return a consistent error object
+      throw new Error(error.response?.data?.message || 'Login failed. Please check your credentials.');
+    }
   };
 
   const logout = () => {

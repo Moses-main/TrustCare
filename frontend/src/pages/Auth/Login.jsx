@@ -1,178 +1,277 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
 import { toast } from 'react-toastify';
+import { useUser } from '@/contexts/UserContext';
+import { FaLock, FaEnvelope, FaUserMd, FaUserInjured, FaEye, FaEyeSlash } from 'react-icons/fa';
+
+// Validation schema using Yup
+const loginSchema = Yup.object().shape({
+  email: Yup.string()
+    .email('Invalid email address')
+    .required('Email is required'),
+  password: Yup.string()
+    .min(8, 'Password must be at least 8 characters')
+    .required('Password is required'),
+  userType: Yup.string()
+    .oneOf(['patient', 'provider'], 'Invalid user type')
+    .required('Please select user type'),
+  rememberMe: Yup.boolean()
+});
 
 const Login = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    userType: 'patient', // 'patient' or 'provider'
-  });
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useUser();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/';
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    // Basic validation
-    if (!formData.email || !formData.password || !formData.userType) {
-      toast.error('Please fill in all fields');
-      return;
+  // Redirect if already authenticated
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      navigate(from, { replace: true });
+    } else {
+      // If no token, ensure loading is set to false
+      setIsLoading(false);
     }
-    
-    // Store user data in localStorage
-    localStorage.setItem('userType', formData.userType);
-    localStorage.setItem('isAuthenticated', 'true');
-    localStorage.setItem('userEmail', formData.email);
-    
-    // Show success message
-    const userTypeDisplay = formData.userType === 'patient' ? 'Patient' : 'Healthcare Provider';
-    toast.success(`Successfully logged in as ${userTypeDisplay}!`);
-    
-    // Log the login attempt (in a real app, this would be an API call)
-    console.log('Login attempt:', {
-      email: formData.email,
-      userType: formData.userType,
-      password: '********' // Don't log actual password
-    });
-    
-    // Redirect to the appropriate dashboard
-    navigate('/dashboard');
+  }, [navigate, from]);
+
+  const handleSubmit = async (values, { setSubmitting, setFieldError }) => {
+    try {
+      setIsLoading(true);
+      const { email, password, rememberMe, userType } = values;
+      
+      // Call the login function from UserContext
+      try {
+        const response = await login({ email, password, userType });
+        
+        if (response && response.token) {
+          if (rememberMe) {
+            localStorage.setItem('rememberMe', 'true');
+          } else {
+            localStorage.removeItem('rememberMe');
+          }
+          
+          toast.success('Login successful!');
+          navigate(userType === 'provider' ? '/provider/dashboard' : '/patient/dashboard');
+        } else {
+          setFieldError('submit', 'Login failed. Please check your credentials and try again.');
+        }
+      } catch (error) {
+        setFieldError('submit', error.response?.data?.message || 'Login failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setFieldError('submit', 'An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+      setSubmitting(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
+        <div className="text-center">
+          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+            Welcome Back
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Or{' '}
-            <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
-              create a new account
+          <p className="mt-2 text-sm text-gray-600">
+            Sign in to access your account
+          </p>
+        </div>
+
+        <Formik
+          initialValues={{
+            email: '',
+            password: '',
+            userType: 'patient',
+            rememberMe: false
+          }}
+          validationSchema={loginSchema}
+          onSubmit={handleSubmit}
+        >
+          {({ isSubmitting, errors, touched, values }) => (
+            <Form className="mt-8 space-y-6">
+              {/* User Type Selection */}
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <label className={`flex items-center justify-center p-4 border rounded-lg cursor-pointer transition-colors ${
+                  values.userType === 'patient' 
+                    ? 'border-blue-500 bg-blue-50' 
+                    : 'border-gray-300 hover:border-blue-300'
+                }`}>
+                  <Field 
+                    type="radio" 
+                    name="userType" 
+                    value="patient" 
+                    className="sr-only" 
+                  />
+                  <div className="text-center">
+                    <FaUserInjured className="mx-auto h-8 w-8 text-blue-600" />
+                    <span className="mt-2 block text-sm font-medium text-gray-700">
+                      I'm a Patient
+                    </span>
+                  </div>
+                </label>
+                
+                <label className={`flex items-center justify-center p-4 border rounded-lg cursor-pointer transition-colors ${
+                  values.userType === 'provider' 
+                    ? 'border-blue-500 bg-blue-50' 
+                    : 'border-gray-300 hover:border-blue-300'
+                }`}>
+                  <Field 
+                    type="radio" 
+                    name="userType" 
+                    value="provider" 
+                    className="sr-only" 
+                  />
+                  <div className="text-center">
+                    <FaUserMd className="mx-auto h-8 w-8 text-blue-600" />
+                    <span className="mt-2 block text-sm font-medium text-gray-700">
+                      I'm a Provider
+                    </span>
+                  </div>
+                </label>
+                <ErrorMessage name="userType" component="div" className="mt-1 text-sm text-red-600 col-span-2" />
+              </div>
+
+              {/* Email Field */}
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email address
+                </label>
+                <div className="relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaEnvelope className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <Field
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    className={`block w-full pl-10 pr-3 py-2 border ${
+                      errors.email && touched.email 
+                        ? 'border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500' 
+                        : 'border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500'
+                    } rounded-md shadow-sm`}
+                    placeholder="you@example.com"
+                  />
+                </div>
+                <ErrorMessage name="email" component="div" className="mt-1 text-sm text-red-600" />
+              </div>
+
+              {/* Password Field */}
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                  Password
+                </label>
+                <div className="relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaLock className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <Field
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    className={`block w-full pl-10 pr-10 py-2 border ${
+                      errors.password && touched.password 
+                        ? 'border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500' 
+                        : 'border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500'
+                    } rounded-md shadow-sm`}
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                    ) : (
+                      <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-500" />
+                    )}
+                  </button>
+                </div>
+                <ErrorMessage name="password" component="div" className="mt-1 text-sm text-red-600" />
+              </div>
+
+              {/* Remember Me & Forgot Password */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <Field
+                    id="remember-me"
+                    name="rememberMe"
+                    type="checkbox"
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+                    Remember me
+                  </label>
+                </div>
+
+                <div className="text-sm">
+                  <Link
+                    to="/forgot-password"
+                    className="font-medium text-blue-600 hover:text-blue-500"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <div>
+                <button
+                  type="submit"
+                  disabled={isSubmitting || isLoading}
+                  className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {isLoading ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Signing in...
+                    </>
+                  ) : 'Sign in'}
+                </button>
+              </div>
+
+              {/* Error Message */}
+              {errors.submit && (
+                <div className="rounded-md bg-red-50 p-4">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-red-800">
+                        {errors.submit}
+                      </h3>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </Form>
+          )}
+        </Formik>
+
+        {/* Sign Up Link */}
+        <div className="mt-6 text-center text-sm">
+          <p className="text-gray-600">
+            Don't have an account?{' '}
+            <Link to="/signup" className="font-medium text-blue-600 hover:text-blue-500">
+              Sign up
             </Link>
           </p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {/* User Type Selection */}
-          <div className="space-y-2">
-            <label htmlFor="login-user-type" className="block text-sm font-medium text-gray-700">
-              I am logging in as a:
-            </label>
-            <div className="relative">
-              <select
-                id="login-user-type"
-                name="userType"
-                value={formData.userType}
-                onChange={handleChange}
-                className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md appearance-none bg-white"
-              >
-                <option value="patient">Patient</option>
-                <option value="provider">Healthcare Provider</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="space-y-1">
-              <label htmlFor="email-address" className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
-              <div className="relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <input
-                  id="email-address"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="you@example.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <div className="text-sm">
-                  <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
-                    Forgot your password?
-                  </a>
-                </div>
-              </div>
-              <div className="relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                </div>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-                Remember me
-              </label>
-            </div>
-
-            <div className="text-sm">
-              <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
-                Forgot your password?
-              </a>
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-            >
-              Sign in
-              <svg className="ml-2 -mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-              </svg>
-            </button>
-          </div>
-        </form>
       </div>
     </div>
   );

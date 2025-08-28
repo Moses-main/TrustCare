@@ -1,10 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
 
 const CTASection = () => {
-  const { currentUser } = useAuth();
-
   return (
     <section className="relative bg-blue-900 text-white py-20 overflow-hidden">
       {/* Decorative elements */}
@@ -23,29 +20,18 @@ const CTASection = () => {
           </p>
           
           <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-            {!currentUser ? (
-              <>
-                <Link
-                  to="/register"
-                  className="flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 md:py-4 md:text-lg md:px-10 transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg"
-                >
-                  Get Started Free
-                </Link>
-                <Link
-                  to="/login"
-                  className="flex items-center justify-center px-8 py-3 border border-white text-base font-medium rounded-md text-white bg-transparent hover:bg-white/10 md:py-4 md:text-lg md:px-10 transition-all duration-200 transform hover:-translate-y-0.5"
-                >
-                  Sign In
-                </Link>
-              </>
-            ) : (
-              <Link
-                to={currentUser.role === 'patient' ? '/patient/dashboard' : '/provider/dashboard'}
-                className="flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 md:py-4 md:text-lg md:px-10 transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg"
-              >
-                Go to Dashboard
-              </Link>
-            )}
+            <Link
+              to="/register"
+              className="flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 md:py-4 md:text-lg md:px-10 transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg"
+            >
+              Get Started Free
+            </Link>
+            <Link
+              to="/login"
+              className="flex items-center justify-center px-8 py-3 border border-white text-base font-medium rounded-md text-white bg-transparent hover:bg-white/10 md:py-4 md:text-lg md:px-10 transition-all duration-200 transform hover:-translate-y-0.5"
+            >
+              Sign In
+            </Link>
           </div>
           
           <div className="mt-8 text-sm text-blue-200">

@@ -8,7 +8,6 @@ import FeaturesSection from "../components/Landing/FeaturesSection";
 import HowItWorks from "../components/Landing/HowItWorks";
 import TestimonialsSection from "../components/Landing/TestimonialsSection";
 import CTASection from "../components/Landing/CTASection";
-import Footer from "../components/Landing/Footer";
 
 // Initialize AOS (Animate on Scroll)
 const initAOS = () => {
@@ -33,7 +32,6 @@ const Landing = () => {
       <HowItWorks />
       <TestimonialsSection />
       <CTASection />
-      <Footer />
     </div>
   );
 };

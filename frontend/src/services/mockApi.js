@@ -1,24 +1,47 @@
 // Mock API for development
-const mockUsers = {
-  'test@example.com': {
-    id: '123',
-    email: 'test@example.com',
-    firstName: 'Test',
-    lastName: 'User',
+const mockUsers = [
+  {
+    id: 'patient-123',
+    email: 'patient@example.com',
+    firstName: 'John',
+    lastName: 'Doe',
     role: 'patient',
-    token: 'mock-jwt-token-123'
+    password: 'password123',
+    token: 'mock-patient-token-123',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'doctor-456',
+    email: 'doctor@example.com',
+    firstName: 'Jane',
+    lastName: 'Smith',
+    role: 'provider',
+    password: 'password123',
+    token: 'mock-doctor-token-456',
+    createdAt: new Date().toISOString()
   }
-};
+];
+
+// Create a map for quick lookup
+const userMap = mockUsers.reduce((acc, user) => {
+  acc[user.email] = user;
+  return acc;
+}, {});
 
 export const mockAuthAPI = {
   login: async (credentials) => {
-    console.log('Mock login with:', credentials);
+    console.log('Mock login with:', credentials.email);
     await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
     
-    const user = mockUsers[credentials.email];
+    const user = userMap[credentials.email];
     
-    if (user && credentials.password === 'password123') {
-      const { token, ...userData } = user;
+    if (user && credentials.password === user.password) {
+      // Clone user object and remove sensitive data
+      const { password, token, ...userData } = JSON.parse(JSON.stringify(user));
+      
+      // Store token in localStorage to simulate real auth
+      localStorage.setItem('token', token);
+      
       return {
         data: {
           token,
@@ -27,19 +50,29 @@ export const mockAuthAPI = {
       };
     }
     
-    throw new Error('Invalid credentials');
+    throw new Error('Invalid email or password');
   },
   
   getMe: async () => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    return {
-      data: {
-        id: '123',
-        email: 'test@example.com',
-        firstName: 'Test',
-        lastName: 'User',
-        role: 'patient'
-      }
-    };
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+    
+    // Find user by token
+    const user = mockUsers.find(u => u.token === token);
+    
+    if (!user) {
+      localStorage.removeItem('token');
+      throw new Error('Session expired. Please log in again');
+    }
+    
+    // Clone user object and remove sensitive data
+    const { password, token: userToken, ...userData } = JSON.parse(JSON.stringify(user));
+    
+    // Return user data without the token
+    return { data: userData };
   }
 };

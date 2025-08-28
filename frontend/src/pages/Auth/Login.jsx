@@ -55,13 +55,42 @@ const Login = () => {
             localStorage.removeItem('rememberMe');
           }
           
-          toast.success('Login successful!');
-          navigate(userType === 'provider' ? '/provider/dashboard' : '/patient/dashboard');
+          toast.success('🎉 Login successful! Redirecting...', {
+            position: 'top-center',
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true
+          });
+          
+          // Small delay to show the success message before redirecting
+          setTimeout(() => {
+            navigate(userType === 'provider' ? '/provider/dashboard' : '/patient/dashboard');
+          }, 1500);
         } else {
-          setFieldError('submit', 'Login failed. Please check your credentials and try again.');
+          const errorMsg = 'Login failed. Please check your credentials and try again.';
+          toast.error(`❌ ${errorMsg}`, {
+            position: 'top-center',
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true
+          });
+          setFieldError('submit', errorMsg);
         }
       } catch (error) {
-        setFieldError('submit', error.response?.data?.message || 'Login failed. Please try again.');
+        const errorMsg = error.response?.data?.message || 'Login failed. Please check your credentials and try again.';
+        toast.error(`❌ ${errorMsg}`, {
+          position: 'top-center',
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true
+        });
+        setFieldError('submit', errorMsg);
       }
     } catch (error) {
       console.error('Login error:', error);

@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
-import { FaUser, FaEnvelope, FaLock, FaWallet, FaUserMd, FaUserInjured } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaLock, FaWallet, FaUserMd, FaUserInjured, FaEye, FaEyeSlash } from 'react-icons/fa';
 import api from '../../services/api';
 
 // Validation schema using Yup

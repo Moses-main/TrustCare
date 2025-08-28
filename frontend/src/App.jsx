@@ -102,30 +102,21 @@ function App() {
             <Route path="/patient" element={<AuthenticatedLayout />}>
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<PatientDashboard />} />
+              <Route path="profile" element={<Navigate to="/patient/dashboard" replace />} />
               <Route path="appointments" element={<Appointments />} />
               <Route path="medical-records" element={<MedicalRecords />} />
               <Route path="health-metrics" element={<HealthMetrics />} />
               <Route path="medications" element={<Medications />} />
             </Route>
 
+            {/* Profile Redirects */}
+            <Route path="/provider/profile" element={<Navigate to="/provider/dashboard" replace />} />
+            <Route path="/patient/profile" element={<Navigate to="/patient/dashboard" replace />} />
+
             {/* Provider Routes */}
-            <Route
-              path="/provider"
-              element={
-                <MainLayout>
-                  <ProviderDashboard />
-                </MainLayout>
-              }
-            >
+            <Route path="/provider" element={<MainLayout><ProviderDashboard /></MainLayout>}>
               <Route index element={<Navigate to="dashboard" replace />} />
-              <Route
-                path="dashboard"
-                element={
-                  <MainLayout>
-                    <ProviderDashboard />
-                  </MainLayout>
-                }
-              />
+              <Route path="dashboard" element={<ProviderDashboard />} />
               <Route
                 path="appointments"
                 element={

@@ -1,27 +1,10 @@
 import React, { useState } from 'react';
 import { FaHeartbeat, FaWeight, FaThermometerHalf, FaTint, FaPlus } from 'react-icons/fa';
 import { Line } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
+import { Chart, registerables } from 'chart.js';
 
-// Register ChartJS components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
+// Register all ChartJS components
+Chart.register(...registerables);
 
 const HealthMetrics = () => {
   const [activeTab, setActiveTab] = useState('overview');

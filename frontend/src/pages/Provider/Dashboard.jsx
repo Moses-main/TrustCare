@@ -1,51 +1,74 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { FaUserInjured, FaCalendarAlt, FaFileMedical, FaNotesMedical, FaProcedures, FaUserMd } from 'react-icons/fa';
+import { Line } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+
+// Register ChartJS components
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const Dashboard = () => {
-  // Mock user data for now
-  const user = {
-    firstName: 'Provider',
-    role: 'provider'
+  // Mock data
+  const [stats, setStats] = useState({
+    totalPatients: 156,
+    todayAppointments: 8,
+    pendingPrescriptions: 12,
+    availableBeds: 24,
+  });
+
+  // Chart data
+  const patientData = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+    datasets: [
+      {
+        label: 'New Patients',
+        data: [12, 19, 15, 27, 22, 18, 24],
+        borderColor: 'rgb(99, 102, 241)',
+        backgroundColor: 'rgba(99, 102, 241, 0.5)',
+        tension: 0.3,
+      },
+    ],
   };
 
+  const upcomingAppointments = [
+    { id: 1, patient: 'John Doe', time: '09:00 AM', type: 'Follow-up' },
+    { id: 2, patient: 'Jane Smith', time: '10:30 AM', type: 'Consultation' },
+    { id: 3, patient: 'Robert Johnson', time: '11:15 AM', type: 'Check-up' },
+  ];
+
+  const recentPatients = [
+    { id: 1, name: 'John Doe', lastVisit: '2 days ago', status: 'Recovering' },
+    { id: 2, name: 'Jane Smith', lastVisit: '1 week ago', status: 'Under Treatment' },
+    { id: 3, name: 'Robert Johnson', lastVisit: '3 days ago', status: 'Stable' },
+  ];
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">
-          Welcome back, {user?.firstName || 'Patient'}
+          Provider Dashboard
         </h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Here's an overview of your health records and recent activity.
+        <p className="mt-2 text-gray-600">
+          Welcome back! Here's an overview of your practice.
         </p>
       </div>
 
-      {/* Quick Stats */}
+      {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        {/* Total Patients */}
         <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="p-5">
             <div className="flex items-center">
-              <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3">
-                <svg
-                  className="h-6 w-6 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                  />
-                </svg>
+              <div className="flex-shrink-0 bg-indigo-100 rounded-md p-3">
+                <FaUserInjured className="h-6 w-6 text-indigo-600" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">
-                    Medical Records
+                    Total Patients
                   </dt>
                   <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900">12</div>
+                    <div className="text-2xl font-semibold text-gray-900">{stats.totalPatients}</div>
                   </dd>
                 </dl>
               </div>
@@ -53,41 +76,27 @@ const Dashboard = () => {
           </div>
           <div className="bg-gray-50 px-5 py-3">
             <div className="text-sm">
-              <Link
-                to="/records"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                View all
+              <Link to="/provider/patients" className="font-medium text-indigo-600 hover:text-indigo-500">
+                View all patients
               </Link>
             </div>
           </div>
         </div>
 
+        {/* Today's Appointments */}
         <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="p-5">
             <div className="flex items-center">
-              <div className="flex-shrink-0 bg-green-500 rounded-md p-3">
-                <svg
-                  className="h-6 w-6 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
+              <div className="flex-shrink-0 bg-green-100 rounded-md p-3">
+                <FaCalendarAlt className="h-6 w-6 text-green-600" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">
-                    Upcoming Appointments
+                    Today's Appointments
                   </dt>
                   <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900">2</div>
+                    <div className="text-2xl font-semibold text-gray-900">{stats.todayAppointments}</div>
                   </dd>
                 </dl>
               </div>
@@ -95,11 +104,8 @@ const Dashboard = () => {
           </div>
           <div className="bg-gray-50 px-5 py-3">
             <div className="text-sm">
-              <Link
-                to="/appointments"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                View all
+              <Link to="/provider/appointments" className="font-medium text-indigo-600 hover:text-indigo-500">
+                View schedule
               </Link>
             </div>
           </div>
@@ -376,10 +382,7 @@ const Dashboard = () => {
                       Follow-up Consultation
                     </p>
                     <p className="text-sm text-gray-500">
-                      {new Date(
-                        new Date().setDate(new Date().getDate() + 7)
-                      ).toLocaleDateString()}{' '}
-                      at 2:30 PM
+                      {new Date().toLocaleDateString()}
                     </p>
                   </div>
                 </div>

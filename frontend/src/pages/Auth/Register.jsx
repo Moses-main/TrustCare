@@ -40,11 +40,17 @@ const Register = () => {
       return;
     }
     
-    // Show success message with user type
-    const userType = formData.userType === 'patient' ? 'Patient' : 'Healthcare Provider';
-    toast.success(`Successfully registered as a ${userType}!`);
+    // Store user data in localStorage
+    localStorage.setItem('userType', formData.userType);
+    localStorage.setItem('isAuthenticated', 'true');
+    localStorage.setItem('userName', formData.name);
+    localStorage.setItem('userEmail', formData.email);
     
-    // In a real app, you would send this data to your backend
+    if (formData.userType === 'provider') {
+      localStorage.setItem('licenseNumber', formData.licenseNumber || '');
+    }
+    
+    // Log the registration data (in a real app, this would be an API call)
     console.log('Registration data:', {
       name: formData.name,
       email: formData.email,
@@ -54,10 +60,12 @@ const Register = () => {
       confirmPassword: '********'
     });
     
-    // Redirect to login after a short delay
-    setTimeout(() => {
-      navigate('/login');
-    }, 1500);
+    // Show success message
+    const userTypeDisplay = formData.userType === 'patient' ? 'Patient' : 'Healthcare Provider';
+    toast.success(`Successfully registered as a ${userTypeDisplay}!`);
+    
+    // Redirect to the appropriate dashboard
+    navigate('/dashboard');
   };
 
   return (

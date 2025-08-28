@@ -27,7 +27,7 @@ const TestimonialCard = ({ quote, author, role, avatar, rating = 5 }) => (
   </div>
 );
 
-const TestimonialsSection = () => {
+const TestimonialsSection = ({ id }) => {
   const testimonials = [
     {
       quote: "This platform has completely transformed how I manage my family's health records. Everything is in one secure place and easily accessible.",
@@ -60,7 +60,7 @@ const TestimonialsSection = () => {
   ];
 
   return (
-    <section className="py-20 bg-gray-50 relative overflow-hidden">
+    <section id={id} className="py-16 bg-gray-50 scroll-mt-16 relative overflow-hidden">
       {/* Decorative elements */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-200 rounded-full -mr-32 -mt-32"></div>

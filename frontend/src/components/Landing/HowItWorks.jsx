@@ -28,7 +28,7 @@ const Step = ({ number, title, description, icon, delay }) => {
   );
 };
 
-const HowItWorks = () => {
+const HowItWorks = ({ id }) => {
   const steps = [
     {
       number: 1,
@@ -57,7 +57,7 @@ const HowItWorks = () => {
   ];
 
   return (
-    <section className="py-20 bg-white relative overflow-hidden">
+    <section id={id} className="py-16 bg-white scroll-mt-16 relative overflow-hidden">
       {/* Decorative elements */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 rounded-full bg-blue-100"></div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from '../components/Layout/Navbar';
 import Footer from '../components/Layout/Footer';
 
@@ -9,15 +9,18 @@ import Footer from '../components/Layout/Footer';
  * - Main content area with Outlet for page content
  * - Footer at the bottom
  */
-const MainLayout = () => {
+const MainLayout = ({ children }) => {
+  const location = useLocation();
+  const isLandingPage = location.pathname === '/' || location.pathname === '/landing';
+  
   return (
     <div className="min-h-screen flex flex-col">
       {/* Navigation Bar */}
       <Navbar />
       
-      {/* Main Content - flex-grow makes it take up all available space */}
-      <main className="flex-grow pt-16">
-        <Outlet />
+      {/* Main Content */}
+      <main className={`flex-grow ${!isLandingPage ? 'pt-16' : ''}`}>
+        {children || <Outlet />}
       </main>
       
       {/* Footer */}

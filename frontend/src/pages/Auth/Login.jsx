@@ -21,26 +21,29 @@ const Login = () => {
     e.preventDefault();
     
     // Basic validation
-    if (!formData.email || !formData.password) {
+    if (!formData.email || !formData.password || !formData.userType) {
       toast.error('Please fill in all fields');
       return;
     }
     
-    // Dummy login - just show success message and redirect
-    const userType = formData.userType === 'patient' ? 'Patient' : 'Healthcare Provider';
-    toast.success(`Successfully logged in as ${userType}!`);
+    // Store user data in localStorage
+    localStorage.setItem('userType', formData.userType);
+    localStorage.setItem('isAuthenticated', 'true');
+    localStorage.setItem('userEmail', formData.email);
     
-    // In a real app, you would send this data to your backend
+    // Show success message
+    const userTypeDisplay = formData.userType === 'patient' ? 'Patient' : 'Healthcare Provider';
+    toast.success(`Successfully logged in as ${userTypeDisplay}!`);
+    
+    // Log the login attempt (in a real app, this would be an API call)
     console.log('Login attempt:', {
       email: formData.email,
       userType: formData.userType,
       password: '********' // Don't log actual password
     });
     
-    // Redirect after a short delay
-    setTimeout(() => {
-      navigate('/landing');
-    }, 1000);
+    // Redirect to the appropriate dashboard
+    navigate('/dashboard');
   };
 
   return (

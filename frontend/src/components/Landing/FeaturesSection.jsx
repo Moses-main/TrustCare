@@ -15,7 +15,7 @@ const FeatureCard = ({ icon, title, description, delay }) => (
   </div>
 );
 
-const FeaturesSection = () => {
+const FeaturesSection = ({ id }) => {
   const features = [
     {
       icon: <FaShieldAlt />,
@@ -60,7 +60,7 @@ const FeaturesSection = () => {
   ];
 
   return (
-    <section className="py-20 bg-gray-50 relative overflow-hidden">
+    <section id={id} className="py-16 bg-gray-50 scroll-mt-16 relative overflow-hidden">
       {/* Decorative elements */}
       <div className="absolute top-0 left-0 w-full h-full opacity-5">
         <div className="absolute top-20 -left-40 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl"></div>

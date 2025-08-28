@@ -2,9 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaShieldAlt, FaLock, FaUserShield } from 'react-icons/fa';
 
-const HeroSection = () => {
+const HeroSection = ({ id }) => {
   return (
-    <section className="relative bg-gradient-to-r from-blue-900 to-blue-800 text-white overflow-hidden">
+    <div id={id} className="relative bg-gradient-to-r from-blue-600 to-blue-800 text-white overflow-hidden">
       {/* Decorative elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-[url('/images/grid-pattern.svg')] opacity-10"></div>
@@ -67,7 +67,7 @@ const HeroSection = () => {
       <div className="relative
         before:absolute before:content-[''] before:block before:w-full before:h-20 before:bg-white before:rounded-t-full before:bottom-0 before:left-0">
       </div>
-    </section>
+    </div>
   );
 };
 

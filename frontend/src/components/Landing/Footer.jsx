@@ -66,11 +66,11 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8">
         <div className="xl:grid xl:grid-cols-3 xl:gap-8">
           <div className="space-y-8 xl:col-span-1">
-            <div className="flex items-center">
-              <span className="text-white text-2xl font-bold">DHRS</span>
-            </div>
+            <h2 className="text-2xl font-bold text-white">
+              <span className="text-blue-400">TrustCare</span>
+            </h2>
             <p className="text-gray-300 text-base">
-              The most secure and private way to manage your healthcare records, powered by blockchain technology.
+              Secure, decentralized healthcare records for everyone.
             </p>
             <div className="flex space-x-6">
               {navigation.social.map((item) => (
@@ -139,8 +139,8 @@ const Footer = () => {
         </div>
         
         <div className="mt-12 border-t border-gray-800 pt-8">
-          <p className="text-base text-gray-400 xl:text-center">
-            &copy; {currentYear} DHRS. All rights reserved.
+          <p className="text-gray-400 text-base">
+            &copy; {currentYear} TrustCare. All rights reserved.
           </p>
         </div>
       </div>

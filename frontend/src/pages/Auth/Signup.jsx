@@ -3,8 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
-import { FaUser, FaEnvelope, FaLock, FaWallet, FaUserMd, FaUserInjured, FaEye, FaEyeSlash } from 'react-icons/fa';
-import api from '../../services/api';
+import { authAPI } from '@/services/api';
+import { FaUser, FaEnvelope, FaLock, FaWallet, FaUserMd, FaUserInjured, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 
 // Validation schema using Yup
 const signupSchema = Yup.object().shape({
@@ -46,35 +46,32 @@ const Signup = () => {
         walletAddress: values.walletAddress
       };
 
-      // Call the signup API
-      const response = await api.post('/auth/signup', payload);
+      // Call the signup API using our enhanced service
+      const response = await authAPI.register(payload);
       
-      if (response.data.success) {
-        toast.success('🎉 Account created successfully! Please log in.', {
-          position: 'top-center',
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true
-        });
+      // If we get here, registration was successful
+      toast.success('🎉 Account created successfully! Redirecting to login...', {
+        position: 'top-center',
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
+
+      // Redirect to login after a short delay
+      setTimeout(() => {
         navigate('/login');
-      } else {
-        const errorMsg = response.data.message || 'Signup failed. Please try again.';
-        toast.error(`❌ ${errorMsg}`, {
-          position: 'top-center',
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true
-        });
-        setFieldError('submit', errorMsg);
-      }
+      }, 2000);
     } catch (error) {
       console.error('Signup error:', error);
-      const errorMessage = error.response?.data?.message || 'An unexpected error occurred. Please try again later.';
-      toast.error(`❌ ${errorMessage}`, {
+      
+      // Use the error message from our API service
+      const errorMsg = error.message || 'Failed to create account. Please try again.';
+      
+      // Set form error and show toast
+      setFieldError('submit', errorMsg);
+      toast.error(`❌ ${errorMsg}`, {
         position: 'top-center',
         autoClose: 5000,
         hideProgressBar: false,
@@ -82,7 +79,6 @@ const Signup = () => {
         pauseOnHover: true,
         draggable: true
       });
-      setFieldError('submit', errorMessage);
     } finally {
       setIsLoading(false);
       setSubmitting(false);
@@ -303,31 +299,16 @@ const Signup = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting || isLoading}
-                  className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-80 disabled:cursor-not-allowed transition-all duration-200"
+                  className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <span className={`flex items-center ${isLoading ? 'opacity-100' : 'opacity-100'}`}>
-                    {isLoading ? (
-                      <>
-                        <svg 
-                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" 
-                          xmlns="http://www.w3.org/2000/svg" 
-                          fill="none" 
-                          viewBox="0 0 24 24"
-                        >
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Creating Account...
-                      </>
-                    ) : (
-                      <span className="flex items-center">
-                        <span className="mr-2">Create Account</span>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                      </span>
-                    )}
-                  </span>
+                  {(isSubmitting || isLoading) ? (
+                    <>
+                      <FaSpinner className="animate-spin mr-2" />
+                      Creating Account...
+                    </>
+                  ) : (
+                    'Sign up'
+                  )}
                 </button>
               </div>
 

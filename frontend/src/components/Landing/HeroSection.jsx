@@ -4,15 +4,12 @@ import { FaShieldAlt, FaLock, FaUserShield } from 'react-icons/fa';
 
 const HeroSection = ({ id }) => {
   return (
-    <div id={id} className="relative bg-gradient-to-r from-blue-600 to-blue-800 text-white overflow-hidden">
-      {/* Decorative elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/images/grid-pattern.svg')] opacity-10"></div>
-        <div className="absolute -right-40 -top-20 w-96 h-96 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
-        <div className="absolute -left-20 -bottom-20 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
-      </div>
+    <div id={id} className="relative bg-cover bg-center bg-no-repeat text-white overflow-hidden min-h-screen flex items-center" 
+         style={{ backgroundImage: 'url(/images/security-box-usdt.png)' }}>
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/50"></div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 lg:py-40">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 lg:py-40 z-10">
         <div className="text-center">
           <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-white/10 backdrop-blur-sm text-blue-100 mb-6 border border-white/20">
             <span className="h-2 w-2 rounded-full bg-green-400 mr-2 animate-pulse"></span>
@@ -31,13 +28,13 @@ const HeroSection = ({ id }) => {
           <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
             <Link
               to="/register"
-              className="flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 md:py-4 md:text-lg md:px-10 transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg"
+              className="flex items-center justify-center px-8 py-3 border-2 border-white text-base font-medium rounded-md text-white bg-transparent hover:bg-white/10 backdrop-blur-sm md:py-4 md:text-lg md:px-10 transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg"
             >
               Get Started Free
             </Link>
             <Link
               to="/login"
-              className="flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10 transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg"
+              className="flex items-center justify-center px-8 py-3 border-2 border-white text-base font-medium rounded-md text-white bg-white/20 hover:bg-white/30 backdrop-blur-sm md:py-4 md:text-lg md:px-10 transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg"
             >
               Sign In
             </Link>

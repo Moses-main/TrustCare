@@ -120,4 +120,38 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Something went wrong!" });
 });
 
+const PORT = process.env.PORT || 4500;
+
+// Start the server
+const startServer = async () => {
+  try {
+    // Connect to MongoDB
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log('MongoDB connected successfully');
+
+    // Start the HTTP server
+    httpServer.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+      console.log(`API Documentation: http://localhost:${PORT}/api-docs`);
+    });
+  } catch (error) {
+    console.error('Error starting server:', error);
+    process.exit(1);
+  }
+};
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled Rejection Error:', err);
+  // Close server & exit process
+  httpServer.close(() => process.exit(1));
+});
+
+// Start the server
+startServer();
+
 export { app, io };
+

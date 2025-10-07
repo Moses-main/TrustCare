@@ -1,14 +1,17 @@
 import axios from "axios";
+import { toast } from 'react-toastify';
 
+// Create axios instance with default config
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4500/api";
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 10000, // 10 seconds timeout
 });
 
-// Add a request interceptor to include auth token
+// Request interceptor for API calls
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -22,22 +25,195 @@ api.interceptors.request.use(
   }
 );
 
+// Response interceptor for API calls
+api.interceptors.response.use(
+  (response) => {
+    // Return the successful response data
+    return response.data;
+  },
+  (error) => {
+    // Handle errors
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      const { status, data } = error.response;
+      
+      // Handle specific status codes
+      if (status === 401) {
+        // Unauthorized - token expired or invalid
+        localStorage.removeItem("token");
+        window.location.href = "/login?session=expired";
+      }
+      
+      // Return error message from server or default message
+      return Promise.reject({
+        message: data?.message || 'An error occurred',
+        status,
+        data: data?.data || null
+      });
+    } else if (error.request) {
+      // The request was made but no response was received
+      return Promise.reject({
+        message: 'No response from server. Please check your connection.',
+        status: 0
+      });
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      return Promise.reject({
+        message: error.message || 'An unexpected error occurred',
+        status: 0
+      });
+    }
+  }
+);
+
 // Auth API
 export const authAPI = {
-  // Authentication
-  login: (credentials) => api.post("/auth/login", credentials),
-  register: (userData) => api.post("/auth/signup", userData),
-  getMe: () => api.get("/auth/me"),
-  updateMe: (userData) => api.put("/auth/me", userData),
+  /**
+   * Login user with email and password
+   * @param {Object} credentials - User credentials
+   * @param {string} credentials.email - User's email
+   * @param {string} credentials.password - User's password
+   * @returns {Promise<Object>} User data and auth token
+   */
+  login: async (credentials) => {
+    try {
+      const response = await api.post("/auth/login", credentials);
+      // Store token in localStorage if available
+      if (response?.token) {
+        localStorage.setItem("token", response.token);
+      }
+      return response;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Register a new user
+   * @param {Object} userData - User registration data
+   * @param {string} userData.name - User's full name
+   * @param {string} userData.email - User's email
+   * @param {string} userData.password - User's password
+   * @param {string} userData.role - User's role (patient/doctor)
+   * @param {string} [userData.walletAddress] - User's wallet address
+   * @returns {Promise<Object>} Created user data
+   */
+  register: async (userData) => {
+    try {
+      const response = await api.post("/auth/signup", userData);
+      // Store token in localStorage if available
+      if (response?.token) {
+        localStorage.setItem("token", response.token);
+      }
+      return response;
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get current authenticated user's profile
+   * @returns {Promise<Object>} User profile data
+   */
+  getMe: async () => {
+    try {
+      return await api.get("/auth/me");
+    } catch (error) {
+      console.error('Get profile error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Update current user's profile
+   * @param {Object} userData - Updated user data
+   * @returns {Promise<Object>} Updated user data
+   */
+  updateMe: async (userData) => {
+    try {
+      return await api.put("/auth/me", userData);
+    } catch (error) {
+      console.error('Update profile error:', error);
+      throw error;
+    }
+  },
   
   // Password Management
-  forgotPassword: (email) => api.post("/auth/forgot-password", { email }),
-  resetPassword: (token, password) => api.post(`/auth/reset-password/${token}`, { password }),
-  updatePassword: (currentPassword, newPassword) => api.put("/auth/update-password", { currentPassword, newPassword }),
+  /**
+   * Request password reset email
+   * @param {string} email - User's email
+   * @returns {Promise<Object>} Success message
+   */
+  forgotPassword: async (email) => {
+    try {
+      return await api.post("/auth/forgot-password", { email });
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Reset password with token from email
+   * @param {string} token - Password reset token
+   * @param {string} password - New password
+   * @returns {Promise<Object>} Success message
+   */
+  resetPassword: async (token, password) => {
+    try {
+      return await api.post(`/auth/reset-password/${token}`, { password });
+    } catch (error) {
+      console.error('Reset password error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Update current user's password
+   * @param {string} currentPassword - Current password
+   * @param {string} newPassword - New password
+   * @returns {Promise<Object>} Success message
+   */
+  updatePassword: async (currentPassword, newPassword) => {
+    try {
+      return await api.put("/auth/update-password", { currentPassword, newPassword });
+    } catch (error) {
+      console.error('Update password error:', error);
+      throw error;
+    }
+  },
   
   // Email Verification
-  verifyEmail: (token) => api.get(`/auth/verify-email/${token}`),
-  resendVerificationEmail: (email) => api.post("/auth/resend-verification", { email }),
+  /**
+   * Verify email with token
+   * @param {string} token - Email verification token
+   * @returns {Promise<Object>} Success message
+   */
+  verifyEmail: async (token) => {
+    try {
+      return await api.get(`/auth/verify-email/${token}`);
+    } catch (error) {
+      console.error('Email verification error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Resend verification email
+   * @param {string} email - User's email
+   * @returns {Promise<Object>} Success message
+   */
+  resendVerificationEmail: async (email) => {
+    try {
+      return await api.post("/auth/resend-verification", { email });
+    } catch (error) {
+      console.error('Resend verification email error:', error);
+      throw error;
+    }
+  },
 };
 
 // Users API

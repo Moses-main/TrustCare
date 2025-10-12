@@ -1,61 +1,91 @@
 import React, { useState, useEffect } from 'react';
-import { FaFileMedical, FaFilePdf, FaFileImage, FaFileAlt, FaDownload, FaSearch } from 'react-icons/fa';
+import { FaFileMedical, FaFilePdf, FaFileImage, FaFileAlt, FaDownload, FaSearch, FaSpinner } from 'react-icons/fa';
 import { format } from 'date-fns';
+import { toast } from 'react-toastify';
+import api from '../../services/api';
 
 const MedicalRecords = () => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [error, setError] = useState(null);
 
-  // Mock data - replace with API call in production
+  // Fetch records from the API
   useEffect(() => {
     const fetchRecords = async () => {
       try {
-        // TODO: Replace with actual API call
+        setLoading(true);
+        setError(null);
+        
+        // Try to fetch from the API
+        try {
+          const response = await api.get('/api/records/provider/records');
+          if (response.data && Array.isArray(response.data)) {
+            setRecords(response.data);
+            return;
+          }
+          throw new Error('Invalid response format');
+        } catch (apiError) {
+          console.error('API Error:', apiError);
+          // Fall through to mock data
+          throw apiError;
+        }
+      } catch (err) {
+        console.error('Error fetching records:', err);
+        setError('Failed to load medical records. Using demo data.');
+        toast.warning('Using demo data - API connection failed');
+        
+        // Fallback to mock data for demo purposes
         const mockRecords = [
           {
-            id: 1,
+            id: '1',
             title: 'Annual Physical Exam',
-            date: '2023-05-15',
+            date: new Date('2023-05-15'),
             category: 'exams',
             type: 'pdf',
             doctor: 'Dr. Sarah Johnson',
             notes: 'Routine annual checkup. All vitals normal.',
+            patientName: 'John Doe',
+            status: 'active'
           },
           {
-            id: 2,
+            id: '2',
             title: 'Blood Test Results',
-            date: '2023-04-20',
+            date: new Date('2023-04-20'),
             category: 'lab_results',
             type: 'pdf',
             doctor: 'Dr. Michael Chen',
             notes: 'Complete blood count and metabolic panel. All values within normal range.',
+            patientName: 'Jane Smith',
+            status: 'active'
           },
           {
-            id: 3,
-            title: 'X-Ray - Right Ankle',
-            date: '2023-03-10',
+            id: '3',
+            title: 'X-Ray Results',
+            date: new Date('2023-03-15'),
             category: 'imaging',
             type: 'image',
             doctor: 'Dr. Emily Wilson',
-            notes: 'No fractures detected. Minor sprain diagnosed.',
+            notes: 'Chest X-ray shows clear lungs with no abnormalities detected.',
+            patientName: 'Robert Johnson',
+            status: 'active'
           },
           {
-            id: 4,
-            title: 'Prescription - Amoxicillin',
-            date: '2023-02-28',
+            id: '4',
+            title: 'Prescription: Amoxicillin',
+            date: new Date('2023-02-28'),
             category: 'prescriptions',
             type: 'document',
             doctor: 'Dr. Robert Taylor',
             notes: 'For bacterial infection. Take twice daily for 10 days.',
-          },
+            patientName: 'Sarah Williams',
+            status: 'active'
+          }
         ];
         
         setRecords(mockRecords);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching medical records:', error);
+      } finally {
         setLoading(false);
       }
     };

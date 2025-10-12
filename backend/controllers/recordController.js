@@ -174,3 +174,76 @@ export const downloadMedicalRecord = async (req, res) => {
       .json({ message: "Failed to download file", error: error.message });
   }
 };
+
+// Get all records that a provider has access to
+export const getProviderRecords = async (req, res) => {
+  try {
+    const providerWallet = req.user.walletAddress;
+    
+    // Get all records where the provider has been granted access
+    const records = await MedicalRecord.find({
+      'accessList.provider': providerWallet,
+      'accessList.revoked': false,
+      'accessList.expiresAt': { $gt: new Date() }
+    })
+      .populate('patient', 'fullName contactInfo.email')
+      .sort({ createdAt: -1 });
+
+    // Transform the data for the frontend
+    const formattedRecords = records.map(record => ({
+      id: record._id,
+      title: record.recordType,
+      date: record.createdAt,
+      category: record.recordType.toLowerCase().replace(/\s+/g, '_'),
+      type: record.fileType || 'document',
+      doctor: record.createdBy?.name || 'Unknown Provider',
+      notes: record.metadata?.notes || '',
+      patientName: record.patient?.fullName || 'Unknown Patient',
+      patientId: record.patient?._id,
+      fileUrl: `/api/records/download/${record._id}`,
+      status: 'active'
+    }));
+
+    res.json(formattedRecords);
+  } catch (error) {
+    console.error('Error fetching provider records:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch medical records',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+// Get all records for the current patient
+export const getMyRecords = async (req, res) => {
+  try {
+    const patientWallet = req.user.walletAddress;
+    
+    // Get all records for the current patient
+    const records = await MedicalRecord.find({ patientWallet })
+      .sort({ createdAt: -1 });
+
+    // Transform the data for the frontend
+    const formattedRecords = records.map(record => ({
+      id: record._id,
+      title: record.recordType,
+      date: record.createdAt,
+      type: record.fileType || 'document',
+      doctor: record.createdBy?.name || 'System',
+      notes: record.metadata?.notes || '',
+      fileType: record.fileType || 'document',
+      fileUrl: `/api/records/download/${record._id}`,
+      status: 'active'
+    }));
+
+    res.json(formattedRecords);
+  } catch (error) {
+    console.error('Error fetching patient records:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch medical records',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};

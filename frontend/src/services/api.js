@@ -271,6 +271,9 @@ export const patientsAPI = {
   getAllPatients: (params) => api.get("/patients", { params }),
   getPatient: (id) => api.get(`/patients/${id}`),
   updatePatient: (id, patientData) => api.put(`/patients/${id}`, patientData),
+  
+  // Provider Patients
+  getProviderPatients: () => api.get("/patients/provider/patients"),
 };
 
 // Providers API
@@ -325,9 +328,15 @@ export const recordsAPI = {
   
   // Record Access
   getRecord: (id) => api.get(`/records/${id}`),
-  getPatientRecords: (patientWallet) => api.get(`/records/${patientWallet}`),
-  downloadRecord: (recordId) => api.get(`/records/${recordId}/download`, { responseType: 'blob' }),
-  
+  getPatientRecords(patientWallet) {
+    return api.get(`/records/${patientWallet}`);
+  },
+  getProviderRecords() {
+    return api.get('/records/provider/records');
+  },
+  downloadRecord(recordId) {
+    return api.get(`/records/download/${recordId}`, { responseType: 'blob' });
+  },
   // Record Sharing
   shareRecord: (recordId, sharedWith) => api.post(`/records/${recordId}/share`, { sharedWith }),
   revokeAccess: (recordId, walletAddress) => api.delete(`/records/${recordId}/share/${walletAddress}`),

@@ -16,6 +16,7 @@ import patientRoutes from "./routes/patients.js";
 import recordRoutes from "./routes/records.js";
 import appointmentRoutes from "./routes/appointments.js";
 import userRoutes from "./routes/users.js";
+import providerRoutes from "./routes/providers.js";
 import socketInjector from "./middleware/socketInjector.js";
 
 // Import controllers for direct route testing (temporary)
@@ -89,6 +90,7 @@ app.use("/api/patients", patientRoutes);
 app.use("/api/records", recordRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/providers", providerRoutes);
 
 // Test route (temporary)
 app.post("/test-login", express.json(), (req, res, next) => {

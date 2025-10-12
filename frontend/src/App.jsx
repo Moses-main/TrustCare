@@ -41,12 +41,9 @@ const Medications = lazy(() => import("@/pages/patient/Medications"));
 
 // Provider Pages
 const ProviderDashboard = lazy(() => import("@/pages/Provider/Dashboard"));
-const ProviderAppointments = lazy(
-  () => import("@/pages/Provider/Appointments")
-);
-const PatientManagement = lazy(
-  () => import("@/pages/Provider/PatientManagement")
-);
+const ProviderAppointments = lazy(() => import("@/pages/Provider/Appointments"));
+const ProviderRecords = lazy(() => import("@/pages/provider/ProviderRecords"));
+const PatientManagement = lazy(() => import("@/pages/Provider/PatientManagement"));
 
 // Loading Component
 const LoadingSpinner = () => (
@@ -59,7 +56,9 @@ const LoadingSpinner = () => (
 const AuthenticatedLayout = () => {
   return (
     <MainLayout>
-      <Outlet />
+      <Suspense fallback={<LoadingSpinner />}>
+        <Outlet />
+      </Suspense>
     </MainLayout>
   );
 };
@@ -164,32 +163,17 @@ function App() {
                 />
 
                 {/* Provider Routes */}
-                <Route
-                  path="/provider"
-                  element={
-                    <MainLayout>
-                      <ProviderDashboard />
-                    </MainLayout>
-                  }
-                >
+                <Route path="/provider" element={<AuthenticatedLayout />}>
                   <Route index element={<Navigate to="dashboard" replace />} />
                   <Route path="dashboard" element={<ProviderDashboard />} />
-                  <Route
-                    path="appointments"
-                    element={
-                      <MainLayout>
-                        <ProviderAppointments />
-                      </MainLayout>
-                    }
-                  />
-                  <Route
-                    path="patients"
-                    element={
-                      <MainLayout>
-                        <PatientManagement />
-                      </MainLayout>
-                    }
-                  />
+                  <Route path="appointments" element={<ProviderAppointments />} />
+                  <Route path="patients" element={<PatientManagement />} />
+                  <Route path="records" element={<ProviderRecords />} />
+                  <Route path="profile" element={<ProfileSettings />} />
+                  
+                  {/* Nested routes for patient management */}
+                  <Route path="patients/:id" element={<div>Patient Details</div>} />
+                  <Route path="patients/:id/records" element={<div>Patient Medical Records</div>} />
                 </Route>
 
                 {/* Legacy dashboard route (temporary) */}

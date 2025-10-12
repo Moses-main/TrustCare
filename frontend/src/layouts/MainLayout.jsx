@@ -12,20 +12,26 @@ import Footer from "../components/Landing/Footer";
 const MainLayout = ({ children }) => {
   const location = useLocation();
   const isLandingPage =
-    location.pathname === "/" || location.pathname === "/landing";
+    location.pathname === "/" ||
+    location.pathname === "/landing" ||
+    location.pathname.startsWith("/login") ||
+    location.pathname.startsWith("/register");
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Navigation Bar */}
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      {/* Navigation Bar - Only show for authenticated routes */}
       <Navbar />
+      {/* {!isLandingPage && <Navbar />} */}
 
       {/* Main Content */}
-      <main className={`flex-grow ${!isLandingPage ? "pt-16" : ""}`}>
-        {children || <Outlet />}
+      <main className={`flex-1 ${!isLandingPage ? "pt-16" : ""}`}>
+        <div className="max-w-full mx-auto px-0  lg:px-8 py-6 w-full">
+          {children || <Outlet />}
+        </div>
       </main>
 
-      {/* Footer */}
-      <Footer />
+      {/* Footer - Only show for landing page */}
+      {isLandingPage && <Footer />}
     </div>
   );
 };

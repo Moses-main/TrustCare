@@ -1,11 +1,14 @@
-// backend/routes/auth.js
+// backend/routes/providers.js
 import express from "express";
+import auth from "../middleware/auth.js";
+import { getAllPatients } from "../controllers/patientController.js";
 
 const router = express.Router();
 
-// Example route
-router.post("/provider", (req, res) => {
-  res.json({ message: "Provider endpoint" });
-});
+// All routes require authentication
+router.use(auth);
+
+// Get all patients (for providers)
+router.get("/patients", getAllPatients);
 
 export default router;

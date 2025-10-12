@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { verifyEmail as verifyEmailApi } from '../../services/api';
+import { authAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import { Button, Container, Typography, Box, CircularProgress } from '@mui/material';
@@ -17,9 +17,10 @@ const VerifyEmail = () => {
   useEffect(() => {
     const verifyToken = async () => {
       try {
-        const response = await verifyEmailApi(token);
+        setIsVerifying(true);
+        await authAPI.verifyEmail(token);
         setStatus('success');
-        setMessage(response.message || 'Your email has been verified successfully!');
+        setMessage('Your email has been verified successfully!');
         
         // Update auth state if user is logged in
         setAuthState(prev => ({
@@ -41,6 +42,8 @@ const VerifyEmail = () => {
           error.response?.data?.message || 
           'The verification link is invalid or has expired. Please request a new one.'
         );
+      } finally {
+        setIsVerifying(false);
       }
     };
 

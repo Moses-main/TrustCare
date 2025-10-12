@@ -2,7 +2,7 @@ import axios from "axios";
 import { toast } from 'react-toastify';
 
 // Create axios instance with default config
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4500/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4501/api";
 const api = axios.create({
   baseURL: API_URL,
   headers: {
@@ -10,6 +10,8 @@ const api = axios.create({
   },
   timeout: 10000, // 10 seconds timeout
 });
+
+console.log('API Base URL:', API_URL); // Debug log
 
 // Request interceptor for API calls
 api.interceptors.request.use(

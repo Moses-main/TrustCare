@@ -1,4 +1,3 @@
-// backend/server.js
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -8,23 +7,22 @@ import dotenv from "dotenv";
 import { createServer } from "http";
 import { Server } from "socket.io";
 
-// ========================
-// import routes
-// ========================
+// Import routes
 import authRoutes from "./routes/auth.js";
 import patientRoutes from "./routes/patients.js";
 import recordRoutes from "./routes/records.js";
 import appointmentRoutes from "./routes/appointments.js";
 import userRoutes from "./routes/users.js";
-import socketInjector from "./middleware/socketInjector.js";
-
-// Import controllers for direct route testing (temporary)
 import { login } from "./controllers/authController.js";
 
+// Load environment variables
 dotenv.config();
 
+// Initialize Express app
 const app = express();
 const httpServer = createServer(app);
+
+// Socket.IO configuration
 const io = new Server(httpServer, {
   cors: {
     origin: process.env.FRONTEND_URL || "http://localhost:3000",
@@ -32,9 +30,7 @@ const io = new Server(httpServer, {
   },
 });
 
-//===================
 // Security middleware
-// ===================
 app.use(helmet());
 
 // CORS configuration
@@ -45,7 +41,7 @@ const corsOptions = {
     'http://127.0.0.1:3000',
     'http://localhost:5173',
     'http://127.0.0.1:5173',
-  ].filter(Boolean), // Remove any undefined values
+  ].filter(Boolean),
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
@@ -54,36 +50,20 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
-// Handle preflight requests
 app.options('*', cors(corsOptions));
 
-// use the socket injector
-app.use(socketInjector(io));
-
-// =============
 // Rate limiting
-// =============
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
 });
 app.use(limiter);
 
-// =======================
 // Body parsing middleware
-// ========================
-
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-// ==========================
-// MongoDB Database connection
-// ===========================
-
-// ===============
-// ====== API Routes
-// ================
+// API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/patients", patientRoutes);
 app.use("/api/records", recordRoutes);
@@ -95,31 +75,17 @@ app.post("/test-login", express.json(), (req, res, next) => {
   login(req, res).catch(next);
 });
 
-// ================
-// Socket.io events
-// ================
+// Socket.IO events
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
-
+  
   socket.on("join-room", (userId) => {
     socket.join(userId);
+    console.log(`User ${socket.id} joined room: ${userId}`);
   });
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
-  });
-});
-
-// ================
-// Socket.IO Events
-// ================
-
-io.on("connection", (socket) => {
-  console.log("New client connected:", socket.id);
-  socket.on("join", (walletAddress) => {
-    socket.join(walletAddress);
-
-    console.log(`Client joined room: ${walletAddress}`);
   });
 });
 
@@ -129,13 +95,13 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Something went wrong!" });
 });
 
-const PORT = process.env.PORT || 4500;
-
 // Start the server
 const startServer = async () => {
+  const PORT = process.env.PORT || 4500;
+  
   try {
     // Connect to MongoDB
-    await mongoose.connect(process.env.MONGO_URI, {
+    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/trustcare', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
@@ -143,8 +109,7 @@ const startServer = async () => {
 
     // Start the HTTP server
     httpServer.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-      console.log(`API Documentation: http://localhost:${PORT}/api-docs`);
+      console.log(`Server is running on http://localhost:${PORT}`);
     });
   } catch (error) {
     console.error('Error starting server:', error);
@@ -161,6 +126,3 @@ process.on('unhandledRejection', (err) => {
 
 // Start the server
 startServer();
-
-export { app, io };
-

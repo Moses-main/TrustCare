@@ -1,5 +1,5 @@
 import express from 'express';
-import { protect } from '../middleware/auth.js';
+import auth from '../middleware/auth.js';
 import {
   createAppointment,
   getPatientAppointments,
@@ -11,7 +11,7 @@ import {
 const router = express.Router();
 
 // Protected routes (require authentication)
-router.use(protect);
+router.use(auth);
 
 // Patient routes
 router.get('/patient/:userId', getPatientAppointments);

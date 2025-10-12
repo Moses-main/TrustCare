@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
-import { useUser } from '@/contexts/UserContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { authAPI } from '@/services/api';
 import { FaLock, FaEnvelope, FaUserMd, FaUserInjured, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 
@@ -13,21 +13,19 @@ const loginSchema = Yup.object().shape({
     .email('Invalid email address')
     .required('Email is required'),
   password: Yup.string()
-    .min(8, 'Password must be at least 8 characters')
+    .min(6, 'Password must be at least 6 characters')
     .required('Password is required'),
-  userType: Yup.string()
-    .oneOf(['patient', 'provider'], 'Invalid user type')
-    .required('Please select user type'),
   rememberMe: Yup.boolean()
 });
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useUser();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -43,58 +41,98 @@ const Login = () => {
   const handleSubmit = async (values, { setSubmitting, setFieldError }) => {
     try {
       setIsLoading(true);
-      const { email, password, rememberMe, userType } = values;
+      setError('');
+      const { email, password, rememberMe } = values;
+      
+      console.log('Attempting login with:', { email });
       
       // Call the login API
-      try {
-        const response = await authAPI.login({ email, password });
+      const response = await authAPI.login({ email, password }).catch(error => {
+        console.error('Login API error:', error);
+        console.error('Response data:', error.response?.data);
+        console.error('Response status:', error.response?.status);
+        throw error;
+      });
+      
+      console.log('Login response:', response);
+      
+      if (response?.token) {
+        // Store the token
+        localStorage.setItem('token', response.token);
         
-        // Call the login function from UserContext to update the auth state
-        if (response && response.token) {
-          await login({ email, token: response.token, userType });
-          
-          // Handle remember me
-          if (rememberMe) {
-            localStorage.setItem('rememberMe', 'true');
-          } else {
-            localStorage.removeItem('rememberMe');
-          }
-          
-          // Show success message
-          toast.success('🎉 Login successful! Redirecting...', {
-            position: 'top-center',
-            autoClose: 1500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true
-          });
-          
-          // Redirect based on user type
-          setTimeout(() => {
-            navigate(userType === 'provider' ? '/provider/dashboard' : '/patient/dashboard');
-          }, 1000);
+        // Handle remember me
+        if (rememberMe) {
+          localStorage.setItem('rememberMe', 'true');
+        } else {
+          localStorage.removeItem('rememberMe');
         }
-      } catch (error) {
-        console.error('Login error:', error);
-        const errorMsg = error.message || 'Login failed. Please check your credentials and try again.';
         
-        toast.error(`❌ ${errorMsg}`, {
+        // Update auth context with user data
+        login({
+          id: response.user._id,
+          name: response.user.name,
+          email: response.user.email,
+          role: response.user.role,
+          walletAddress: response.user.walletAddress
+        });
+        
+        // Show success message
+        toast.success('🎉 Login successful! Redirecting...', {
           position: 'top-center',
-          autoClose: 5000,
+          autoClose: 1500,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
           draggable: true
         });
         
-        setFieldError('submit', errorMsg);
+        // Redirect based on user role
+        setTimeout(() => {
+          const redirectPath = response.user.role === 'provider' ? '/provider/dashboard' : '/dashboard';
+          navigate(redirectPath);
+        }, 1000);
       }
     } catch (error) {
-      console.error('Unexpected error:', error);
-      toast.error('❌ An unexpected error occurred. Please try again.', {
+      console.error('Login error:', error);
+      console.error('Error response:', error.response?.data);
+      
+      let errorMessage = 'Invalid email or password';
+      
+      // More detailed error handling
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error('Error status:', error.response.status);
+        console.error('Error data:', error.response.data);
+        
+        if (error.response.status === 401) {
+          errorMessage = 'Invalid email or password. Please try again.';
+        } else if (error.response.status >= 500) {
+          errorMessage = 'Server error. Please try again later.';
+        } else if (error.response.data?.message) {
+          errorMessage = error.response.data.message;
+        }
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('No response received:', error.request);
+        errorMessage = 'No response from server. Please check your connection.';
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error('Request setup error:', error.message);
+        errorMessage = `Error: ${error.message}`;
+      }
+      
+      setError(errorMessage);
+      setFieldError('password', errorMessage);
+      setFieldError('email', ' '); // Clear email error to avoid duplicate messages
+      
+      toast.error(`❌ ${errorMessage}`, {
         position: 'top-center',
-        autoClose: 5000
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
       });
     } finally {
       setIsLoading(false);
@@ -118,7 +156,6 @@ const Login = () => {
           initialValues={{
             email: '',
             password: '',
-            userType: 'patient',
             rememberMe: false
           }}
           validationSchema={loginSchema}
@@ -126,47 +163,6 @@ const Login = () => {
         >
           {({ isSubmitting, errors, touched, values }) => (
             <Form className="mt-8 space-y-6">
-              {/* User Type Selection */}
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <label className={`flex items-center justify-center p-4 border rounded-lg cursor-pointer transition-colors ${
-                  values.userType === 'patient' 
-                    ? 'border-blue-500 bg-blue-50' 
-                    : 'border-gray-300 hover:border-blue-300'
-                }`}>
-                  <Field 
-                    type="radio" 
-                    name="userType" 
-                    value="patient" 
-                    className="sr-only" 
-                  />
-                  <div className="text-center">
-                    <FaUserInjured className="mx-auto h-8 w-8 text-blue-600" />
-                    <span className="mt-2 block text-sm font-medium text-gray-700">
-                      I'm a Patient
-                    </span>
-                  </div>
-                </label>
-                
-                <label className={`flex items-center justify-center p-4 border rounded-lg cursor-pointer transition-colors ${
-                  values.userType === 'provider' 
-                    ? 'border-blue-500 bg-blue-50' 
-                    : 'border-gray-300 hover:border-blue-300'
-                }`}>
-                  <Field 
-                    type="radio" 
-                    name="userType" 
-                    value="provider" 
-                    className="sr-only" 
-                  />
-                  <div className="text-center">
-                    <FaUserMd className="mx-auto h-8 w-8 text-blue-600" />
-                    <span className="mt-2 block text-sm font-medium text-gray-700">
-                      I'm a Provider
-                    </span>
-                  </div>
-                </label>
-                <ErrorMessage name="userType" component="div" className="mt-1 text-sm text-red-600 col-span-2" />
-              </div>
 
               {/* Email Field */}
               <div>
@@ -233,36 +229,38 @@ const Login = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <Field
-                    id="remember-me"
-                    name="rememberMe"
                     type="checkbox"
+                    id="rememberMe"
+                    name="rememberMe"
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+                  <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-700">
                     Remember me
                   </label>
                 </div>
 
                 <div className="text-sm">
-                  <Link
-                    to="/forgot-password"
-                    className="font-medium text-blue-600 hover:text-blue-500"
-                  >
+                  <Link to="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
                     Forgot password?
                   </Link>
                 </div>
               </div>
+              {error && (
+                <div className="mt-2 text-sm text-red-600">
+                  {error}
+                </div>
+              )}
 
               {/* Submit Button */}
               <div>
                 <button
                   type="submit"
                   disabled={isSubmitting || isLoading}
-                  className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isSubmitting || isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
                 >
-                  {(isSubmitting || isLoading) ? (
+                  {isSubmitting || isLoading ? (
                     <>
-                      <FaSpinner className="animate-spin mr-2" />
+                      <FaSpinner className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
                       Signing in...
                     </>
                   ) : (
@@ -296,7 +294,7 @@ const Login = () => {
         <div className="mt-6 text-center text-sm">
           <p className="text-gray-600">
             Don't have an account?{' '}
-            <Link to="/signup" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
               Sign up
             </Link>
           </p>

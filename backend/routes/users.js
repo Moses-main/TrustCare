@@ -1,11 +1,11 @@
 import express from 'express';
-import { protect } from '../middleware/auth.js';
+import auth from '../middleware/auth.js';
 import { getUsers, getUserById } from '../controllers/userController.js';
 
 const router = express.Router();
 
 // Apply authentication middleware to all routes
-router.use(protect);
+router.use(auth);
 
 // GET /api/users - Get all users (with optional role filter)
 // Example: /api/users?role=doctor

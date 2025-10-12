@@ -16,7 +16,7 @@ import { UserProvider } from "@/contexts/UserContext";
 // Layouts
 import MainLayout from "@/layouts/MainLayout";
 import Navbar from "@/components/Layout/Navbar";
-import Footer from "@/components/Layout/Footer";
+// import Footer from "@/components/Layout/Footer";
 
 // Auth Pages
 const Login = lazy(() => import("@/pages/Auth/Login"));
@@ -112,18 +112,16 @@ function App() {
                     </MainLayout>
                   }
                 />
+                {/* Auth Routes */}
+                <Route path="/login" element={<Login />} />
                 <Route
-                  path="/signup"
+                  path="/register"
                   element={
                     <MainLayout>
                       <Signup />
                     </MainLayout>
                   }
                 />
-
-                {/* Auth Routes */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Signup />} />
 
                 {/* Patient Routes */}
                 <Route path="/patient" element={<AuthenticatedLayout />}>

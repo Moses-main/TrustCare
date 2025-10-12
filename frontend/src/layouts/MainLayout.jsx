@@ -25,7 +25,7 @@ const MainLayout = ({ children }) => {
 
       {/* Main Content */}
       <main className={`flex-1 ${!isLandingPage ? "pt-16" : ""}`}>
-        <div className="max-w-full mx-auto px-0  lg:px-8 py-6 w-full">
+        <div className="max-w-full lg:px-8 py-6 w-full">
           {children || <Outlet />}
         </div>
       </main>

@@ -17,6 +17,9 @@ pids/
 # dotenv environment variables
 .env
 
+# Scripts
+/scripts/
+
 # OS-specific
 .DS_Store
 Thumbs.db

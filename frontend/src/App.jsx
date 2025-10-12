@@ -21,6 +21,8 @@ import Navbar from "@/components/Layout/Navbar";
 // Auth Pages
 const Login = lazy(() => import("@/pages/Auth/Login"));
 const Signup = lazy(() => import("@/pages/Auth/Signup"));
+const VerifyEmail = lazy(() => import("@/pages/auth/VerifyEmail"));
+const ResendVerification = lazy(() => import("@/components/auth/ResendVerification"));
 
 // Public Pages
 const Landing = lazy(() => import("@/pages/Landing/Landing"));
@@ -112,13 +114,27 @@ function App() {
                     </MainLayout>
                   }
                 />
-                {/* Auth Routes */}
-                <Route path="/login" element={<Login />} />
                 <Route
                   path="/register"
                   element={
                     <MainLayout>
                       <Signup />
+                    </MainLayout>
+                  }
+                />
+                <Route
+                  path="/verify-email/:token"
+                  element={
+                    <MainLayout>
+                      <VerifyEmail />
+                    </MainLayout>
+                  }
+                />
+                <Route
+                  path="/resend-verification"
+                  element={
+                    <MainLayout>
+                      <ResendVerification />
                     </MainLayout>
                   }
                 />

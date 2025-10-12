@@ -26,6 +26,7 @@ const Login = () => {
   const from = location.state?.from?.pathname || '/';
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [showResendLink, setShowResendLink] = useState(false);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -57,6 +58,29 @@ const Login = () => {
       console.log('Login response:', response);
       
       if (response?.token) {
+        // Check if email is verified
+        if (!response.user.isEmailVerified) {
+          // Store the email for potential resend
+          const email = response.user.email;
+          
+          // Show error message and redirect to resend verification page
+          toast.error('Please verify your email before logging in', {
+            position: 'top-center',
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true
+          });
+          
+          // Navigate to resend verification page
+          navigate('/resend-verification', { 
+            state: { email },
+            replace: true 
+          });
+          return;
+        }
+        
         // Store the token
         localStorage.setItem('token', response.token);
         
@@ -73,7 +97,8 @@ const Login = () => {
           name: response.user.name,
           email: response.user.email,
           role: response.user.role,
-          walletAddress: response.user.walletAddress
+          walletAddress: response.user.walletAddress,
+          isEmailVerified: response.user.isEmailVerified
         });
         
         // Show success message
@@ -89,7 +114,7 @@ const Login = () => {
         // Redirect based on user role
         setTimeout(() => {
           const redirectPath = response.user.role === 'provider' ? '/provider/dashboard' : '/dashboard';
-          navigate(redirectPath);
+          navigate(redirectPath, { replace: true });
         }, 1000);
       }
     } catch (error) {
@@ -106,7 +131,12 @@ const Login = () => {
         console.error('Error data:', error.response.data);
         
         if (error.response.status === 401) {
-          errorMessage = 'Invalid email or password. Please try again.';
+          if (error.response.data?.code === 'EMAIL_NOT_VERIFIED') {
+            errorMessage = 'Please verify your email before logging in.';
+            setShowResendLink(true);
+          } else {
+            errorMessage = 'Invalid email or password. Please try again.';
+          }
         } else if (error.response.status >= 500) {
           errorMessage = 'Server error. Please try again later.';
         } else if (error.response.data?.message) {
@@ -245,12 +275,24 @@ const Login = () => {
                   </Link>
                 </div>
               </div>
+              
+              {showResendLink && (
+                <div className="mt-2 text-sm text-center">
+                  <span className="text-gray-600">Didn't receive the verification email? </span>
+                  <Link 
+                    to="/resend-verification" 
+                    state={{ email: values.email }}
+                    className="font-medium text-blue-600 hover:text-blue-500"
+                  >
+                    Resend verification email
+                  </Link>
+                </div>
+              )}
               {error && (
                 <div className="mt-2 text-sm text-red-600">
                   {error}
                 </div>
               )}
-
               {/* Submit Button */}
               <div>
                 <button

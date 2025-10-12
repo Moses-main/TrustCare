@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import { v4 as uuidv4 } from 'uuid';
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -19,6 +20,13 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true, minlength: 6 },
   passwordResetToken: String,
   passwordResetExpires: Date,
+  emailVerificationToken: { type: String },
+  emailVerificationExpires: { type: Date },
+  isEmailVerified: { type: Boolean, default: false },
+  lastLogin: { type: Date },
+  loginAttempts: { type: Number, default: 0 },
+  accountLocked: { type: Boolean, default: false },
+  accountLockedUntil: { type: Date },
 });
 
 // Hash password before saving
@@ -41,6 +49,30 @@ userSchema.methods.createPasswordResetToken = function () {
     .digest("hex");
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 mins
   return resetToken;
+};
+
+// Generate email verification token
+userSchema.methods.generateEmailVerificationToken = function() {
+  const verificationToken = uuidv4();
+  this.emailVerificationToken = crypto
+    .createHash('sha256')
+    .update(verificationToken)
+    .digest('hex');
+  this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+  return verificationToken;
+};
+
+// Check if email verification token is valid
+userSchema.methods.isVerificationTokenValid = function(token) {
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(token)
+    .digest('hex');
+
+  return (
+    hashedToken === this.emailVerificationToken &&
+    this.emailVerificationExpires > Date.now()
+  );
 };
 
 export default mongoose.model("User", userSchema);

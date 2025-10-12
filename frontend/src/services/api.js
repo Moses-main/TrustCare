@@ -194,7 +194,8 @@ export const authAPI = {
    */
   verifyEmail: async (token) => {
     try {
-      return await api.get(`/auth/verify-email/${token}`);
+      const response = await api.get(`/auth/verify-email/${token}`);
+      return response;
     } catch (error) {
       console.error('Email verification error:', error);
       throw error;
@@ -208,7 +209,8 @@ export const authAPI = {
    */
   resendVerificationEmail: async (email) => {
     try {
-      return await api.post("/auth/resend-verification", { email });
+      const response = await api.post('/auth/resend-verification', { email });
+      return response;
     } catch (error) {
       console.error('Resend verification email error:', error);
       throw error;

@@ -15,6 +15,7 @@ const Register = () => {
     licenseNumber: '' // Only for providers
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [showVerificationMessage, setShowVerificationMessage] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -68,19 +69,29 @@ const Register = () => {
       // Call the registration API
       const response = await authAPI.register(userData);
       
-      // Store user data and token
-      if (response.token) {
-        login({
-          id: response.user._id,
-          name: response.user.name,
-          email: response.user.email,
-          role: response.user.role,
-          walletAddress: response.user.walletAddress
-        });
-        
-        toast.success('Registration successful!');
-        navigate('/dashboard');
-      }
+      // Show success message and redirect to login
+      toast.success('Registration successful! Please check your email to verify your account.', {
+        position: 'top-center',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
+      
+      // Show verification message instead of redirecting immediately
+      setShowVerificationMessage(true);
+      
+      // Clear form
+      setFormData({
+        name: '',
+        email: formData.email, // Keep email for potential resend
+        password: '',
+        confirmPassword: '',
+        role: 'patient',
+        walletAddress: '',
+        licenseNumber: ''
+      });
     } catch (error) {
       console.error('Registration error:', error);
       toast.error(error.response?.data?.message || 'Registration failed. Please try again.');
@@ -88,6 +99,49 @@ const Register = () => {
       setIsLoading(false);
     }
   };
+
+  if (showVerificationMessage) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md text-center">
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+            <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="mt-3 text-2xl font-medium text-gray-900">Check your email</h2>
+          <p className="mt-2 text-gray-600">
+            We've sent a verification link to <span className="font-medium">{formData.email}</span>.
+            Please check your inbox and click the link to verify your account.
+          </p>
+          <div className="mt-6">
+            <button
+              onClick={() => setShowVerificationMessage(false)}
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Back to form
+            </button>
+            <p className="mt-3 text-sm text-gray-600">
+              Didn't receive the email?{' '}
+              <button 
+                onClick={async () => {
+                  try {
+                    await authAPI.resendVerificationEmail(formData.email);
+                    toast.success('Verification email resent!');
+                  } catch (error) {
+                    toast.error('Failed to resend verification email. Please try again.');
+                  }
+                }}
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
+                Resend verification email
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

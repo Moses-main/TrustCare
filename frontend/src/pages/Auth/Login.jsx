@@ -31,10 +31,13 @@ const Login = () => {
   // Redirect if already authenticated
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
-      navigate(from, { replace: true });
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    
+    // Only redirect if we have both token and user data
+    if (token && user) {
+      navigate(from === '/' ? '/dashboard' : from, { replace: true });
     } else {
-      // If no token, ensure loading is set to false
+      // If no valid session, ensure loading is set to false
       setIsLoading(false);
     }
   }, [navigate, from]);

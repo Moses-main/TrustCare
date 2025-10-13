@@ -13,6 +13,7 @@ const VerifyEmail = () => {
   const { setAuthState } = useAuth();
   const [status, setStatus] = useState('verifying'); // 'verifying', 'success', 'error'
   const [message, setMessage] = useState('Verifying your email...');
+  const [isVerifying, setIsVerifying] = useState(false);
 
   useEffect(() => {
     const verifyToken = async () => {
@@ -57,11 +58,31 @@ const VerifyEmail = () => {
 
   const handleResendEmail = async () => {
     try {
-      // We'll implement this in the next step
-      // await resendVerificationEmail();
-      toast.success('Verification email resent successfully!');
+      setIsVerifying(true);
+      // Try to get email from the user object if available
+      const userEmail = localStorage.getItem('userEmail') || 
+                       new URLSearchParams(window.location.search).get('email');
+      
+      if (!userEmail) {
+        // If no email found, show a more user-friendly dialog
+        const enteredEmail = prompt('Please enter your email address to resend the verification email:');
+        if (!enteredEmail) {
+          setIsVerifying(false);
+          return;
+        }
+        await authAPI.resendVerificationEmail(enteredEmail);
+        // Store the email in localStorage for future use
+        localStorage.setItem('userEmail', enteredEmail);
+      } else {
+        await authAPI.resendVerificationEmail(userEmail);
+      }
+      
+      toast.success('Verification email has been resent. Please check your inbox.');
     } catch (error) {
+      console.error('Error resending verification email:', error);
       toast.error(error.response?.data?.message || 'Failed to resend verification email');
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -80,7 +101,7 @@ const VerifyEmail = () => {
           backgroundColor: 'background.paper',
         }}
       >
-        {status === 'verifying' && (
+        {(status === 'verifying' || isVerifying) && (
           <>
             <CircularProgress size={60} sx={{ mb: 3 }} />
             <Typography component="h1" variant="h5">
@@ -110,15 +131,17 @@ const VerifyEmail = () => {
             <Typography component="h1" variant="h5" gutterBottom>
               Verification Failed
             </Typography>
-            <Typography variant="body1" color="text.secondary" paragraph>
+            <Typography variant="body1" color="text.secondary" paragraph sx={{ mb: 3 }}>
               {message}
             </Typography>
             <Button
               variant="contained"
+              color="primary"
               onClick={handleResendEmail}
-              sx={{ mt: 2 }}
+              disabled={isVerifying}
+              startIcon={isVerifying ? <CircularProgress size={20} /> : null}
             >
-              Resend Verification Email
+              {isVerifying ? 'Sending...' : 'Resend Verification Email'}
             </Button>
             <Button
               variant="outlined"

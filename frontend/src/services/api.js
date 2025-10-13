@@ -2,7 +2,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 // Create axios instance with default config
-const API_URL = "http://localhost:4500/api";
+// const API_URL = "http://localhost:4500/api";
+const API_URL = "https://trustcare-1fym.onrender.com/api";
 const api = axios.create({
   baseURL: API_URL,
   headers: {
@@ -214,7 +215,7 @@ export const authAPI = {
    */
   resendVerificationEmail: async (email) => {
     try {
-      const response = await api.post('/auth/resend-verification', { email });
+      const response = await api.post("/auth/resend-verification", { email });
       return response;
     } catch (error) {
       console.error("Resend verification email error:", error);

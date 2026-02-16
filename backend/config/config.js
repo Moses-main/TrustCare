@@ -13,14 +13,14 @@ export const config = {
   JWT_COOKIE_EXPIRE: process.env.JWT_COOKIE_EXPIRE || 30,
   
   // Database Configuration
-  MONGO_URI: process.env.MONGO_URI || 'mongodb://localhost:27017/dhrs',
+  MONGO_URI: process.env.MONGO_URI || 'mongodb://localhost:27017/trustcare',
   
   // Email Configuration
   EMAIL_FROM: process.env.EMAIL_FROM || 'noreply@yourdomain.com',
   SENDGRID_API_KEY: process.env.SENDGRID_API_KEY || 'your_sendgrid_api_key',
   
   // Frontend URL for email links
-  FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3000',
+  FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:5173',
   
   // IPFS Configuration
   IPFS_HOST: process.env.IPFS_HOST || 'ipfs.infura.io',

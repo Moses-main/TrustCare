@@ -89,19 +89,11 @@ function App() {
 
                 <Route
                   path="/login"
-                  element={
-                    <MainLayout>
-                      <Login />
-                    </MainLayout>
-                  }
+                  element={<Navigate to="/landing" replace />}
                 />
                 <Route
                   path="/register"
-                  element={
-                    <MainLayout>
-                      <Signup />
-                    </MainLayout>
-                  }
+                  element={<Navigate to="/landing" replace />}
                 />
 
                 <Route path="/patient" element={<AuthenticatedLayout />}>

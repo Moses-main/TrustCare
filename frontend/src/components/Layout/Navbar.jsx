@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { usePrivy, useLogin } from '@privy-io/react-auth';
 import {
   FaBars,
   FaTimes,
@@ -27,26 +28,71 @@ const Navbar = () => {
   const mobileMenuRef = useRef(null);
   const profileMenuRef = useRef(null);
 
+  const { ready, authenticated, user: privyUser, logout: privyLogout } = usePrivy();
+  const { login } = useLogin({
+    onComplete: (user, isNewUser) => {
+      handleLoginSuccess(user, isNewUser);
+    },
+    onError: (error) => {
+      console.error('Login error:', error);
+    }
+  });
+
+  const handleLoginSuccess = (privyUser, isNewUser) => {
+    const userData = {
+      id: privyUser.id,
+      email: privyUser.email?.address || null,
+      walletAddress: privyUser.wallet?.address || null,
+      name: privyUser.email?.address?.split('@')[0] || privyUser.google?.name || 'User',
+    };
+    setUser(userData);
+    setIsAuthenticated(true);
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('isAuthenticated', 'true');
+    setIsMobileMenuOpen(false);
+  };
+
+  const openLoginModal = () => {
+    login();
+  };
+
   // Check authentication status on mount and when location changes
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
+    const storedUser = localStorage.getItem('user');
+    const isAuth = localStorage.getItem('isAuthenticated') === 'true';
 
-    if (token && storedUser) {
+    if (ready && (authenticated || isAuth)) {
       setIsAuthenticated(true);
-      setUser(JSON.parse(storedUser));
+      if (privyUser) {
+        const userData = {
+          id: privyUser.id,
+          email: privyUser.email?.address || null,
+          walletAddress: privyUser.wallet?.address || null,
+          name: privyUser.email?.address?.split('@')[0] || privyUser.google?.name || 'User',
+        };
+        setUser(userData);
+      } else if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
     } else {
       setIsAuthenticated(false);
       setUser(null);
     }
-  }, [location]);
+  }, [ready, authenticated, privyUser, location]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  const handleLogout = async () => {
+    try {
+      await privyLogout();
+    } catch (e) {
+      console.log('Privy logout error:', e);
+    }
+    localStorage.removeItem('user');
+    localStorage.removeItem('isAuthenticated');
     setIsAuthenticated(false);
     setUser(null);
-    navigate("/login");
+    setIsProfileOpen(false);
+    setIsMobileMenuOpen(false);
+    navigate('/');
   };
 
   const userType = user?.role || "patient";
@@ -262,18 +308,18 @@ const Navbar = () => {
               </>
             ) : (
               <div className="flex items-center space-x-4">
-                <Link
-                  to="/login"
+                <button
+                  onClick={openLoginModal}
                   className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
                 >
                   Sign in
-                </Link>
-                <Link
-                  to="/register"
+                </button>
+                <button
+                  onClick={openLoginModal}
                   className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
                 >
                   Sign up
-                </Link>
+                </button>
               </div>
             )}
           </div>
@@ -378,20 +424,24 @@ const Navbar = () => {
               </>
             ) : (
               <div className="space-y-2 px-3 py-2">
-                <Link
-                  to="/login"
+                <button
+                  onClick={() => {
+                    openLoginModal();
+                    setIsMobileMenuOpen(false);
+                  }}
                   className="block w-full text-center px-4 py-3 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Sign in
-                </Link>
-                <Link
-                  to="/register"
+                </button>
+                <button
+                  onClick={() => {
+                    openLoginModal();
+                    setIsMobileMenuOpen(false);
+                  }}
                   className="block w-full text-center px-4 py-3 rounded-md text-base font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Sign up
-                </Link>
+                </button>
               </div>
             )}
           </div>

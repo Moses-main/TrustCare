@@ -9,50 +9,37 @@ import {
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// Contexts
 import { AuthProvider } from "@/contexts/AuthContext";
 import { UserProvider } from "@/contexts/UserContext";
 
-// Layouts
 import MainLayout from "@/layouts/MainLayout";
-import Navbar from "@/components/Layout/Navbar";
-// import Footer from "@/components/Layout/Footer";
 
-// Auth Pages
 const Login = lazy(() => import("@/pages/Auth/Login"));
 const Signup = lazy(() => import("@/pages/Auth/Signup"));
-const VerifyEmail = lazy(() => import("@/pages/auth/VerifyEmail"));
-const ResendVerification = lazy(() => import("@/components/auth/ResendVerification"));
 
-// Public Pages
 const Landing = lazy(() => import("@/pages/Landing/Landing"));
 const About = lazy(() => import("@/pages/Info/About"));
 const Contact = lazy(() => import("@/pages/Info/Contact"));
 
-// Common Pages
 const ProfileSettings = lazy(() => import("@/pages/Common/ProfileSettings"));
 
-// Patient Pages
 const PatientDashboard = lazy(() => import("@/pages/Patient/Dashboard"));
 const Appointments = lazy(() => import("@/pages/patient/Appointments"));
 const MedicalRecords = lazy(() => import("@/pages/patient/MedicalRecords"));
 const HealthMetrics = lazy(() => import("@/pages/patient/HealthMetrics"));
 const Medications = lazy(() => import("@/pages/patient/Medications"));
 
-// Provider Pages
 const ProviderDashboard = lazy(() => import("@/pages/Provider/Dashboard"));
 const ProviderAppointments = lazy(() => import("@/pages/Provider/Appointments"));
 const ProviderRecords = lazy(() => import("@/pages/provider/ProviderRecords"));
 const PatientManagement = lazy(() => import("@/pages/Provider/PatientManagement"));
 
-// Loading Component
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center min-h-screen">
     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
   </div>
 );
 
-// Layout Wrapper for authenticated routes
 const AuthenticatedLayout = () => {
   return (
     <MainLayout>
@@ -71,10 +58,8 @@ function App() {
           <div className="min-h-screen flex flex-col">
             <Suspense fallback={<LoadingSpinner />}>
               <Routes>
-                {/* Root route - redirects to landing */}
                 <Route path="/" element={<Navigate to="/landing" replace />} />
 
-                {/* Public Routes */}
                 <Route
                   path="/landing"
                   element={
@@ -84,7 +69,6 @@ function App() {
                   }
                 />
 
-                {/* About Page */}
                 <Route
                   path="/about"
                   element={
@@ -94,7 +78,6 @@ function App() {
                   }
                 />
 
-                {/* Contact Page */}
                 <Route
                   path="/contact"
                   element={
@@ -104,7 +87,6 @@ function App() {
                   }
                 />
 
-                {/* Auth Pages */}
                 <Route
                   path="/login"
                   element={
@@ -121,24 +103,7 @@ function App() {
                     </MainLayout>
                   }
                 />
-                <Route
-                  path="/verify-email/:token"
-                  element={
-                    <MainLayout>
-                      <VerifyEmail />
-                    </MainLayout>
-                  }
-                />
-                <Route
-                  path="/resend-verification"
-                  element={
-                    <MainLayout>
-                      <ResendVerification />
-                    </MainLayout>
-                  }
-                />
 
-                {/* Patient Routes */}
                 <Route path="/patient" element={<AuthenticatedLayout />}>
                   <Route index element={<Navigate to="dashboard" replace />} />
                   <Route path="dashboard" element={<PatientDashboard />} />
@@ -152,7 +117,6 @@ function App() {
                   <Route path="medications" element={<Medications />} />
                 </Route>
 
-                {/* Profile Redirects */}
                 <Route
                   path="/provider/profile"
                   element={<Navigate to="/provider/dashboard" replace />}
@@ -162,7 +126,6 @@ function App() {
                   element={<Navigate to="/patient/dashboard" replace />}
                 />
 
-                {/* Provider Routes */}
                 <Route path="/provider" element={<AuthenticatedLayout />}>
                   <Route index element={<Navigate to="dashboard" replace />} />
                   <Route path="dashboard" element={<ProviderDashboard />} />
@@ -171,12 +134,10 @@ function App() {
                   <Route path="records" element={<ProviderRecords />} />
                   <Route path="profile" element={<ProfileSettings />} />
                   
-                  {/* Nested routes for patient management */}
                   <Route path="patients/:id" element={<div>Patient Details</div>} />
                   <Route path="patients/:id/records" element={<div>Patient Medical Records</div>} />
                 </Route>
 
-                {/* Legacy dashboard route (temporary) */}
                 <Route
                   path="/dashboard"
                   element={
@@ -188,9 +149,7 @@ function App() {
                   }
                 />
 
-                {/* Catch all route */}
                 <Route path="*" element={<Navigate to="/landing" replace />} />
-                {/* Profile Settings */}
                 <Route
                   path="/profile/settings"
                   element={
@@ -199,9 +158,6 @@ function App() {
                     </MainLayout>
                   }
                 />
-
-                {/* Catch all route */}
-                <Route path="*" element={<Navigate to="/landing" replace />} />
               </Routes>
             </Suspense>
             <ToastContainer position="bottom-right" autoClose={5000} />

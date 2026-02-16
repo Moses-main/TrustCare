@@ -5,7 +5,7 @@ dotenv.config();
 export const config = {
   // Server Configuration
   NODE_ENV: process.env.NODE_ENV || 'development',
-  PORT: process.env.PORT || 5000,
+  PORT: process.env.PORT || 4500,
   
   // JWT Configuration
   JWT_SECRET: process.env.JWT_SECRET || 'your_jwt_secret_key',

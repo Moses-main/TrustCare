@@ -43,7 +43,7 @@ const Navbar = () => {
       id: privyUser.id,
       email: privyUser.email?.address || null,
       walletAddress: privyUser.wallet?.address || null,
-      name: privyUser.email?.address?.split('@')[0] || privyUser.google?.name || 'User',
+      name: privyUser.email?.address?.split('@')[0] || 'User',
     };
     setUser(userData);
     setIsAuthenticated(true);
@@ -68,7 +68,7 @@ const Navbar = () => {
           id: privyUser.id,
           email: privyUser.email?.address || null,
           walletAddress: privyUser.wallet?.address || null,
-          name: privyUser.email?.address?.split('@')[0] || privyUser.google?.name || 'User',
+          name: privyUser.email?.address?.split('@')[0] || 'User',
         };
         setUser(userData);
       } else if (storedUser) {

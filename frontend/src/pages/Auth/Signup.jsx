@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useLogin } from '@privy-io/react-auth';
 import { toast } from 'react-toastify';
 import { useAuth } from '@/contexts/AuthContext';
-import { FaGoogle, FaApple, FaGithub, FaTwitter, FaWallet, FaEnvelope, FaUser, FaUserMd } from 'react-icons/fa';
+import { FaApple, FaGithub, FaTwitter, FaWallet, FaEnvelope, FaUser, FaUserMd } from 'react-icons/fa';
 
 const Signup = () => {
   const [role, setRole] = useState('patient');
@@ -28,7 +28,7 @@ const Signup = () => {
         id: privyUser.id,
         email: privyUser.email?.address || null,
         walletAddress: privyUser.wallet?.address || null,
-        name: privyUser.email?.address?.split('@')[0] || privyUser.google?.name || 'User',
+        name: privyUser.email?.address?.split('@')[0] || 'User',
         role: role,
         isNewUser
       };
@@ -59,11 +59,6 @@ const Signup = () => {
   const handleWalletSignup = () => {
     setIsLoading(true);
     privyLogin({ method: 'wallet' });
-  };
-
-  const handleGoogleSignup = () => {
-    setIsLoading(true);
-    privyLogin({ method: 'google' });
   };
 
   const handleAppleSignup = () => {
@@ -170,15 +165,6 @@ const Signup = () => {
 
           {/* Social Signups */}
           <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={handleGoogleSignup}
-              disabled={isLoading}
-              className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <FaGoogle className="mr-2 text-red-500" />
-              Google
-            </button>
-
             <button
               onClick={handleAppleSignup}
               disabled={isLoading}

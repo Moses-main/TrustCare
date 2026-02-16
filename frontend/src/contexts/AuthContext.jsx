@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
           id: user.id,
           email: user.email?.address || null,
           walletAddress: user.wallet?.address || null,
-          name: user.email?.address?.split('@')[0] || user.google?.name || 'User',
+          name: user.email?.address?.split('@')[0] || 'User',
         };
         setAppUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));

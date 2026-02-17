@@ -1,11 +1,23 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { useLogin } from '@privy-io/react-auth';
 import { FaShieldAlt, FaLock, FaUserShield } from "react-icons/fa";
 
 const HeroSection = ({ id }) => {
+  const { login } = useLogin({
+    onComplete: (user, isNewUser) => {
+      console.log('Logged in:', user, isNewUser);
+    },
+    onError: (error) => {
+      console.error('Login error:', error);
+    }
+  });
+
+  const openLoginModal = () => {
+    login();
+  };
+
   return (
     <div id={id} className="relative bg-gray-900 text-white overflow-hidden min-h-screen flex items-center">
-      {/* Background with subtle pattern */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-blue-900/80"></div>
         <div className="absolute inset-0 opacity-10" style={{
@@ -35,23 +47,16 @@ const HeroSection = ({ id }) => {
             Your health data, protected by blockchain technology.
           </p>
 
-          <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
-            <Link
-              to="/register"
-              className="px-5 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white text-sm sm:text-base font-medium rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/20"
+          <div className="mt-8 sm:mt-10">
+            <button
+              onClick={openLoginModal}
+              className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white text-base sm:text-lg font-medium rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/20"
             >
-              Get Started Free
-            </Link>
-            <Link
-              to="/login"
-              className="px-5 sm:px-6 py-2.5 sm:py-3 border border-white/20 hover:border-white/40 text-white text-sm sm:text-base font-medium rounded-lg transition-all duration-200 hover:bg-white/5"
-            >
-              Sign In
-            </Link>
+              Get Started
+            </button>
           </div>
         </div>
 
-        {/* Stats */}
         <div className="mt-20 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {[
             {
@@ -85,7 +90,6 @@ const HeroSection = ({ id }) => {
         </div>
       </div>
 
-      {/* Decorative bottom curve */}
       <div
         className="relative
         before:absolute before:content-[''] before:block before:w-full before:h-20 before:bg-white before:rounded-t-full before:bottom-0 before:left-0"

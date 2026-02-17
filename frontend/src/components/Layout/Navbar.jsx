@@ -224,16 +224,8 @@ const Navbar = () => {
                       className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsProfileOpen(false)}
                     >
-                      <IoPersonOutline className="text-lg" />
-                      <span>Profile</span>
-                    </Link>
-                    <Link
-                      to="/profile/settings"
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileOpen(false)}
-                    >
                       <IoSettingsOutline className="text-lg" />
-                      <span>Settings</span>
+                      <span>Profile & Settings</span>
                     </Link>
                     <hr className="my-1 mx-2 border-gray-100" />
                     <button
@@ -243,7 +235,7 @@ const Navbar = () => {
                       <IoLogOutOutline className="text-lg" />
                       <span>Sign out</span>
                     </button>
-                  </div>
+                    </div>
                 )}
               </div>
             ) : (
@@ -318,16 +310,8 @@ const Navbar = () => {
                     className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <IoPersonOutline className="text-lg" />
-                    <span>Profile</span>
-                  </Link>
-                  <Link
-                    to="/profile/settings"
-                    className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
                     <IoSettingsOutline className="text-lg" />
-                    <span>Settings</span>
+                    <span>Profile & Settings</span>
                   </Link>
                   <button
                     onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}

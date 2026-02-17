@@ -85,18 +85,6 @@ a:hover {
   text-decoration: underline;
 }
 
-.container {
-  @apply max-w-7xl mx-auto px-3 sm:px-4 lg:px-6;
-}
-
-@media (min-width: 1280px) {
-  .container {
-    max-width: 1280px;
-  }
-}
-
-@media (min-width: 1536px) {
-  .container {
-    max-width: 1400px;
-  }
+.full-width-container {
+  @apply w-full px-3 sm:px-4 md:px-6 lg:px-8 xl:px-10;
 }

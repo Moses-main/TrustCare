@@ -91,7 +91,7 @@ const PatientDashboard = () => {
   ];
 
   return (
-    <div className="px-3 sm:px-4 py-6 sm:py-8 max-w-7xl mx-auto">
+    <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8 xl:px-10 py-4 sm:py-6 lg:py-8">
       {/* Welcome Section */}
       <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Welcome back, John!</h1>
@@ -99,7 +99,7 @@ const PatientDashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {quickActions.map((action, index) => (
           <Link 
             to={action.link} 
@@ -117,9 +117,9 @@ const PatientDashboard = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+        <div className="lg:col-span-2 xl:col-span-3 space-y-4 sm:space-y-6">
           {/* Upcoming Appointments */}
           <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">

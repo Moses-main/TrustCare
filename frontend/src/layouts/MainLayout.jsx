@@ -15,7 +15,7 @@ const MainLayout = ({ children }) => {
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
       <main className={`flex-1 ${!isLandingPage ? "pt-14 sm:pt-16" : ""}`}>
-        <div className="w-full px-3 sm:px-4 lg:px-6 py-4 sm:py-6 max-w-7xl mx-auto">
+        <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8 xl:px-10 py-4 sm:py-6 lg:py-8">
           {children || <Outlet />}
         </div>
       </main>

@@ -162,8 +162,8 @@ const Navbar = () => {
 
   return (
     <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? "bg-white shadow-md" : "bg-white/95 backdrop-blur-sm"}`}>
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
-        <div className="flex justify-between items-center h-14 sm:h-16">
+      <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8 xl:px-10">
+        <div className="flex justify-between items-center h-14 sm:h-16 max-w-[1920px] mx-auto">
           <div className="flex-shrink-0">
             <Link to="/" className="flex items-center">
               <span className="text-xl sm:text-2xl font-bold text-blue-600">TrustCare</span>

@@ -3,12 +3,6 @@ import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "../components/Layout/Navbar";
 import Footer from "../components/Landing/Footer";
 
-/**
- * Main layout component that wraps all pages with common elements
- * - Navbar at the top
- * - Main content area with Outlet for page content
- * - Footer at the bottom
- */
 const MainLayout = ({ children }) => {
   const location = useLocation();
   const isLandingPage =
@@ -19,18 +13,12 @@ const MainLayout = ({ children }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Navigation Bar - Only show for authenticated routes */}
       <Navbar />
-      {/* {!isLandingPage && <Navbar />} */}
-
-      {/* Main Content */}
-      <main className={`flex-1 ${!isLandingPage ? "pt-16" : ""}`}>
-        <div className="max-w-full lg:px-8 py-6 w-full">
+      <main className={`flex-1 ${!isLandingPage ? "pt-14 sm:pt-16" : ""}`}>
+        <div className="w-full px-3 sm:px-4 lg:px-6 py-4 sm:py-6 max-w-7xl mx-auto">
           {children || <Outlet />}
         </div>
       </main>
-
-      {/* Footer - Only show for landing page */}
       {isLandingPage && <Footer />}
     </div>
   );

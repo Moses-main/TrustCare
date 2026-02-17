@@ -192,10 +192,10 @@ const Navbar = () => {
 
                   {isProfileOpen && (
                     <div className="absolute right-0 mt-2 w-44 sm:w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1" role="menu">
-                      <Link to="/profile" className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileOpen(false)}>
+                      <Link to="/profile/settings" className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileOpen(false)}>
                         <FaUserCircle /><span>Profile</span>
                       </Link>
-                      <Link to="/settings" className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileOpen(false)}>
+                      <Link to="/profile/settings" className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileOpen(false)}>
                         <FaCog /><span>Settings</span>
                       </Link>
                       <hr className="my-1" />
@@ -251,10 +251,10 @@ const Navbar = () => {
                 ))}
 
                 <div className="border-t border-gray-200 mt-2 pt-2">
-                  <Link to="/profile" className="flex items-center gap-3 px-3 py-3 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Link to="/profile/settings" className="flex items-center gap-3 px-3 py-3 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
                     <FaUserCircle className="text-base" /><span>Profile</span>
                   </Link>
-                  <Link to="/settings" className="flex items-center gap-3 px-3 py-3 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Link to="/profile/settings" className="flex items-center gap-3 px-3 py-3 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
                     <FaCog className="text-base" /><span>Settings</span>
                   </Link>
                   <button onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 w-full px-3 py-3 rounded-md text-sm font-medium text-red-600 hover:bg-gray-100 transition-colors">

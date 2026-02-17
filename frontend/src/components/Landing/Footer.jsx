@@ -6,29 +6,13 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
   
   const navigation = {
-    solutions: [
-      { name: 'For Patients', href: '/patients' },
-      { name: 'For Providers', href: '/providers' },
-      { name: 'For Enterprises', href: '/enterprise' },
-      { name: 'Pricing', href: '/pricing' },
-    ],
-    support: [
-      { name: 'Documentation', href: '/docs' },
-      { name: 'Guides', href: '/guides' },
-      { name: 'API Status', href: '/status' },
-      { name: 'Contact Support', href: '/support' },
-    ],
     company: [
       { name: 'About', href: '/about' },
-      { name: 'Blog', href: '/blog' },
-      { name: 'Careers', href: '/careers' },
-      { name: 'Press', href: '/press' },
+      { name: 'Contact', href: '/contact' },
     ],
     legal: [
       { name: 'Privacy', href: '/privacy' },
       { name: 'Terms', href: '/terms' },
-      { name: 'Cookie Policy', href: '/cookies' },
-      { name: 'GDPR', href: '/gdpr' },
     ],
     social: [
       {
@@ -63,18 +47,18 @@ const Footer = () => {
     <footer className="bg-gray-900" aria-labelledby="footer-heading">
       <h2 id="footer-heading" className="sr-only">Footer</h2>
       
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8">
+      <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8 xl:px-10 py-10 sm:py-12">
         <div className="xl:grid xl:grid-cols-3 xl:gap-8">
           <div className="space-y-8 xl:col-span-1">
             <h2 className="text-2xl font-bold text-white">
-              <span className="text-blue-400">TrustCare</span>
+              <span className="text-blue-400"> TrustCare</span>
             </h2>
             <p className="text-gray-300 text-base">
               Secure, decentralized healthcare records for everyone.
             </p>
             <div className="flex space-x-6">
               {navigation.social.map((item) => (
-                <a key={item.name} href={item.href} className="text-gray-400 hover:text-white">
+                <a key={item.name} href={item.href} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white">
                   <span className="sr-only">{item.name}</span>
                   <item.icon className="h-6 w-6" aria-hidden="true" />
                 </a>
@@ -83,32 +67,6 @@ const Footer = () => {
           </div>
           
           <div className="mt-12 grid grid-cols-2 gap-8 xl:mt-0 xl:col-span-2">
-            <div className="md:grid md:grid-cols-2 md:gap-8">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-300 tracking-wider uppercase">Solutions</h3>
-                <ul className="mt-4 space-y-4">
-                  {navigation.solutions.map((item) => (
-                    <li key={item.name}>
-                      <Link to={item.href} className="text-base text-gray-400 hover:text-white">
-                        {item.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="mt-12 md:mt-0">
-                <h3 className="text-sm font-semibold text-gray-300 tracking-wider uppercase">Support</h3>
-                <ul className="mt-4 space-y-4">
-                  {navigation.support.map((item) => (
-                    <li key={item.name}>
-                      <Link to={item.href} className="text-base text-gray-400 hover:text-white">
-                        {item.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
             <div className="md:grid md:grid-cols-2 md:gap-8">
               <div>
                 <h3 className="text-sm font-semibold text-gray-300 tracking-wider uppercase">Company</h3>
@@ -122,7 +80,7 @@ const Footer = () => {
                   ))}
                 </ul>
               </div>
-              <div className="mt-12 md:mt-0">
+              <div className="mt-8 md:mt-0">
                 <h3 className="text-sm font-semibold text-gray-300 tracking-wider uppercase">Legal</h3>
                 <ul className="mt-4 space-y-4">
                   {navigation.legal.map((item) => (
@@ -138,7 +96,7 @@ const Footer = () => {
           </div>
         </div>
         
-        <div className="mt-12 border-t border-gray-800 pt-8">
+        <div className="mt-10 border-t border-gray-800 pt-8">
           <p className="text-gray-400 text-base">
             &copy; {currentYear} TrustCare. All rights reserved.
           </p>

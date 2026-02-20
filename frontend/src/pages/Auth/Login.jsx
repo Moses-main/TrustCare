@@ -7,6 +7,7 @@ import { FaWallet, FaEnvelope } from 'react-icons/fa';
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
   const { login } = useAuth();
   const navigate = useNavigate();
   
@@ -16,6 +17,7 @@ const Login = () => {
     },
     onError: (error) => {
       console.error('Login error:', error);
+      setErrorMessage(error?.message || 'Login failed. Please try again.');
       toast.error('Login failed. Please try again.');
       setIsLoading(false);
     }
@@ -72,7 +74,11 @@ const Login = () => {
             Sign in to access your healthcare dashboard
           </p>
         </div>
-
+        {errorMessage && (
+          <div className="rounded-md bg-red-50 p-3 text-sm text-red-700" role="alert">
+            <span className="font-semibold">Error:</span> {errorMessage}
+          </div>
+        )}
         <div className="mt-8 space-y-4">
           {/* Email Login */}
           <button

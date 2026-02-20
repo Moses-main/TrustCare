@@ -8,6 +8,7 @@ import { FaWallet, FaEnvelope, FaUser, FaUserMd } from 'react-icons/fa';
 const Signup = () => {
   const [role, setRole] = useState('patient');
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
   const { login } = useAuth();
   const navigate = useNavigate();
   
@@ -17,6 +18,7 @@ const Signup = () => {
     },
     onError: (error) => {
       console.error('Signup error:', error);
+      setErrorMessage(error?.message || 'Signup failed. Please try again.');
       toast.error('Signup failed. Please try again.');
       setIsLoading(false);
     }
@@ -72,6 +74,12 @@ const Signup = () => {
             Join TrustCare to manage your healthcare
           </p>
         </div>
+
+        {typeof errorMessage === 'string' && (
+          <div className="rounded-md bg-red-50 p-3 text-sm text-red-700" role="alert">
+            <span className="font-semibold">Error:</span> {errorMessage}
+          </div>
+        )}
 
         {/* Role Selection */}
         <div className="mt-4">
